@@ -26,12 +26,12 @@ const DeleteTodoModal: React.FC<DeleteTodoModalProps> = ({
                     <StyledButton
                         label="Cancel"
                         onPress={onClose}
-                        variant="modal_cancel"
+                        variant="blue_button"
                     />
                     <StyledButton
                         label="Delete"
                         onPress={onDelete}
-                        variant="modal_delete"
+                        variant="blue_button"
                     />
                 </View>
             </View>

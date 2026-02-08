@@ -1,5 +1,6 @@
+import { useAppDispatch, useAppSelector } from "@/store";
+import { addTodo, checkTodo, deleteTodo, editTodo, selectTodos } from "@/store/slices/todoSlice";
 import { Todo } from "@/types/todo";
-import { useState } from "react";
 
 // Random ID generator 
 const generateId = (): string => {
@@ -9,30 +10,27 @@ const generateId = (): string => {
 const defaultTodos: Todo[] = [];
 
 const useTodo = () => {
-
-    const [todos, setTodos] = useState<Todo[]>(defaultTodos);
+    const todos = useAppSelector(selectTodos);
+    const dispatch = useAppDispatch();
 
     const onAddTodo = (title: Todo["title"]) => {
-        setTodos([
-            ...todos,
-            {
-                id: generateId(),
-                title,
-                isCompleted: false,
-            },
-        ])
+        dispatch(addTodo({
+            id: generateId(),
+            title,
+            isCompleted: false,
+        }))
     }
 
     const onDeleteTodo = (id: Todo["id"]) => {
-        setTodos(todos.filter((todo) => todo.id !== id))
+        dispatch(deleteTodo(id))
     }
 
     const onEditTodo = (id: Todo["id"], title: Todo["title"]) => {
-        setTodos(todos.map((todo) => todo.id === id ? { ...todo, title } : todo))
+        dispatch(editTodo({ id, title }))
     }
 
     const onCheckTodo = (id: Todo["id"]) => {
-        setTodos(todos.map((todo) => todo.id === id ? { ...todo, isCompleted: !todo.isCompleted } : todo))
+        dispatch(checkTodo(id))
     }
 
     const completedTodos = todos.filter((todo) => todo.isCompleted);

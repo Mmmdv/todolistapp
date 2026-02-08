@@ -2,6 +2,7 @@ import StyledButton from "@/components/StyledButton"
 import StyledModal from "@/components/StyledModal"
 import StyledText from "@/components/StyledText"
 import StyledTextInput from "@/components/StyledTextInput"
+import { COLORS } from "@/constants/ui"
 import { Todo } from "@/types/todo"
 import { useEffect, useState } from "react"
 import { StyleSheet, View } from "react-native"
@@ -47,29 +48,31 @@ const EditTodoModal: React.FC<EditTodoModalProps> = ({
 
     return (
         <StyledModal isOpen={isOpen} onClose={onClose}>
-            <View style={styles.modalContentContainer}>
-                <StyledText variant="heading">Edit to do task</StyledText>
-                <View style={styles.inputContainer}>
-                    <StyledTextInput
-                        placeholder="Update your to do task.."
-                        value={updatedTitle}
-                        onChangeText={setUpdateTitle}
-                        isError={inputError}
-                    />
-                </View>
-                <View style={styles.buttonsContainer}>
-                    <StyledButton
-                        label="Cancel"
-                        onPress={onClose}
-                        variant="modal_cancel"
-                    />
-                    <StyledButton
-                        label="Save"
-                        onPress={onPressSave}
-                        disabled={inputError}
-                        activeOpacity={0.7}
-                        variant="modal_save"
-                    />
+            <View style={styles.modalContainer}>
+                <View style={styles.modalContentContainer}>
+                    <StyledText variant="heading">Edit to do task</StyledText>
+                    <View style={styles.inputContainer}>
+                        <StyledTextInput
+                            placeholder="Update your to do task.."
+                            value={updatedTitle}
+                            onChangeText={setUpdateTitle}
+                            isError={inputError}
+                        />
+                    </View>
+                    <View style={styles.buttonsContainer}>
+                        <StyledButton
+                            label="Cancel"
+                            onPress={onClose}
+                            variant="blue_button"
+                        />
+                        <StyledButton
+                            label="Save"
+                            onPress={onPressSave}
+                            disabled={inputError}
+                            activeOpacity={0.7}
+                            variant="blue_button"
+                        />
+                    </View>
                 </View>
             </View>
         </StyledModal>
@@ -81,15 +84,27 @@ const styles = StyleSheet.create({
         gap: 20
     },
     inputContainer: {
-        minHeight: 60,
-        width: "100%"
+        backgroundColor: COLORS.PRIMARY_BACKGROUND_WHITE,
+        borderRadius: 10,
+        flexDirection: "row",
+        minHeight: 30,
+        width: "90%"
 
     },
     buttonsContainer: {
         flexDirection: "row",
+        margin: 10,
         justifyContent: "center",
         alignItems: "center",
-        gap: 20
+        gap: 10
+    },
+    modalContainer: {
+        backgroundColor: COLORS.SECONDARY_BACKGROUND,
+        paddingVertical: 30,
+        paddingHorizontal: 0,
+        borderRadius: 25,
+        alignItems: "center",
+        justifyContent: "center"
     }
 })
 

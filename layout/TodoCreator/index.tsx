@@ -1,5 +1,6 @@
 import StyledButton from "@/components/StyledButton"
 import StyledTextInput from "@/components/StyledTextInput"
+import { COLORS } from "@/constants/ui"
 import { Todo } from "@/types/todo"
 import { useEffect, useState } from "react"
 import { Keyboard, StyleSheet, View } from "react-native"
@@ -33,13 +34,14 @@ const TodoCreator: React.FC<TodoCreatorProps> = ({ onAddTodo }) => {
         <View style={styles.container}>
             <StyledTextInput
                 placeholder="Add a new task.."
+                backgroundColor={COLORS.PRIMARY_BACKGROUND_WHITE}
                 value={text}
                 onChangeText={setText}
                 isError={inputError} />
             <StyledButton
                 icon="add-circle-outline"
                 size="large"
-                variant="add"
+                variant="blue_icon"
                 onPress={onPressAdd}
                 disabled={inputError} />
         </View>
@@ -54,7 +56,7 @@ const styles = StyleSheet.create({
         marginVertical: 15,
         paddingHorizontal: 30,
         gap: 10,
-    }
+    },
 })
 
 export default TodoCreator

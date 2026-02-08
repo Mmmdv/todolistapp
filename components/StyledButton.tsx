@@ -8,8 +8,7 @@ type StyledButtonProps = TouchableOpacityProps & {
     label?: string
     icon?: React.ComponentProps<typeof Ionicons>['name']
     size?: "small" | "large"
-    variant?: "delete" | "edit" | "add" |
-    "modal_cancel" | "modal_save" | "modal_delete"
+    variant?: "blue_icon" | "blue_button"
 }
 
 const StyledButton: React.FC<StyledButtonProps> = ({ label, icon, size, variant, disabled, ...props }) => {
@@ -19,13 +18,10 @@ const StyledButton: React.FC<StyledButtonProps> = ({ label, icon, size, variant,
         return "small"
     })()
 
-    const iconSize = size === "large" ? 31 : 17
+    const iconSize = size === "large" ? 27 : 17
 
     const iconColor = (() => {
-        if (variant === "delete") return COLORS.PRIMARY_DELETE_BUTTON_TEXT
-        if (variant === "edit") return COLORS.PRIMARY_EDIT_BUTTON_TEXT
-        if (variant === "add") return COLORS.PRIMARY_ADD_BUTTON_TEXT
-        return COLORS.PRIMARY_TEXT
+        return COLORS.PRIMARY_ACTIVE_BUTTON_TEXT
     })()
 
     return (
@@ -33,12 +29,8 @@ const StyledButton: React.FC<StyledButtonProps> = ({ label, icon, size, variant,
         disabled ? styles.disabled : null,
         size === "small" ? styles.small : null,
         size === "large" ? styles.large : null,
-        variant === "modal_cancel" ? styles.modal_cancel : null,
-        variant === "modal_save" ? styles.modal_save : null,
-        variant === "modal_delete" ? styles.modal_delete : null,
-        variant === "delete" ? styles.delete : null,
-        variant === "edit" ? styles.edit : null,
-        variant === "add" ? styles.add : null]}
+        variant === "blue_icon" ? styles.blue_icon : null,
+        variant === "blue_button" ? styles.blue_button : null]}
             {...props}
             disabled={disabled}>
             {label && <StyledText
@@ -77,32 +69,14 @@ const styles = StyleSheet.create({
         paddingVertical: 10,
         paddingHorizontal: 10
     },
-    modal_cancel: {
-        backgroundColor: COLORS.PRIMARY_DELETE_BUTTON_ICON,
-        borderRadius: 15,
-        minWidth: 100
-    },
-    modal_save: {
-        backgroundColor: COLORS.PRIMARY_EDIT_BUTTON_ICON,
-        borderRadius: 15,
-        minWidth: 100
-    },
-    modal_delete: {
-        backgroundColor: COLORS.PRIMARY_DELETE_BUTTON_ICON,
-        borderRadius: 15,
-        minWidth: 100
-    },
-    delete: {
-        backgroundColor: COLORS.PRIMARY_DELETE_BUTTON_ICON,
+    blue_icon: {
+        backgroundColor: COLORS.PRIMARY_ACTIVE_BUTTON,
         borderRadius: 25
     },
-    edit: {
-        backgroundColor: COLORS.PRIMARY_EDIT_BUTTON_ICON,
-        borderRadius: 25
-    },
-    add: {
-        backgroundColor: COLORS.PRIMARY_ADD_BUTTON_ICON,
-        borderRadius: 25
+    blue_button: {
+        backgroundColor: COLORS.PRIMARY_ACTIVE_BUTTON,
+        borderRadius: 15,
+        minWidth: 100
     }
 })
 

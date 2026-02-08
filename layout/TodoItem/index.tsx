@@ -32,10 +32,6 @@ const TodoItem: React.FC<TodoItemProps> = ({ id, title, isCompleted, checkTodo, 
         checkTodo(id)
     }
 
-    const onDeleteTodo = () => {
-        deleteTodo(id)
-    }
-
     return (
         <View style={styles.container}>
             <View style={styles.checKTitleConainer}>
@@ -52,7 +48,7 @@ const TodoItem: React.FC<TodoItemProps> = ({ id, title, isCompleted, checkTodo, 
                 <StyledButton
                     icon="pencil-sharp"
                     size="small"
-                    variant="edit"
+                    variant="blue_icon"
                     onPress={onPressEdit}>
                 </StyledButton>
                 <EditTodoModal
@@ -64,7 +60,7 @@ const TodoItem: React.FC<TodoItemProps> = ({ id, title, isCompleted, checkTodo, 
                 <StyledButton
                     icon="trash-sharp"
                     size="small"
-                    variant="delete"
+                    variant="blue_icon"
                     onPress={onPressDelete}>
                 </StyledButton>
                 <DeleteTodoModal
