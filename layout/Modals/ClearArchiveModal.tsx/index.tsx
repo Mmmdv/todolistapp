@@ -29,7 +29,9 @@ const ClearArchiveModal: React.FC<ClearArchiveModalProps> = ({
                     <Ionicons name="trash-outline" size={28} color="#FF6B6B" />
                 </View>
 
-                <StyledText style={styles.headerText}>Clear Archive?</StyledText>
+                <StyledText style={styles.headerText}>Clear archive?</StyledText>
+
+                <View style={styles.divider} />
 
                 <StyledText style={styles.messageText}>
                     Are you sure you want to delete all archived tasks? This action cannot be undone.
@@ -76,6 +78,12 @@ const styles = StyleSheet.create({
         fontWeight: "600",
         color: COLORS.PRIMARY_TEXT,
         marginBottom: 5,
+    },
+    divider: {
+        height: 0.5,
+        backgroundColor: "#3a3f47",
+        width: "100%",
+        marginBottom: 10,
     },
     messageText: {
         fontSize: 14,

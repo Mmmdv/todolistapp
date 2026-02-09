@@ -97,12 +97,16 @@ const styles = StyleSheet.create({
     blue_button: {
         backgroundColor: COLORS.PRIMARY_ACTIVE_BUTTON,
         borderRadius: 15,
-        minWidth: 100
+        minWidth: 100,
+        borderWidth: 1,
+        borderColor: COLORS.PRIMARY_BORDER_DARK
     },
     delete_button: {
         backgroundColor: "#FF6B6B",
         borderRadius: 15,
-        minWidth: 100
+        minWidth: 100,
+        borderWidth: 1,
+        borderColor: COLORS.PRIMARY_BORDER_DARK
     }
 })
 

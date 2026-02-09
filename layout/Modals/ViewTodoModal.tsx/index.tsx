@@ -38,7 +38,7 @@ const ViewTodoModal: React.FC<ViewTodoModalProps> = ({
                     <Ionicons name="checkmark-done-circle" size={28} color="#4ECDC4" />
                 </View>
 
-                <StyledText style={styles.headerText}>Task Details</StyledText>
+                <StyledText style={styles.headerText}>Task details</StyledText>
 
                 <View style={styles.divider} />
 
@@ -87,49 +87,68 @@ const ViewTodoModal: React.FC<ViewTodoModalProps> = ({
 const styles = StyleSheet.create({
     modalContainer: {
         backgroundColor: COLORS.SECONDARY_BACKGROUND,
-        borderRadius: 15,
-        borderWidth: 0.5,
+        borderRadius: 20,
+        borderWidth: 1,
         borderColor: "#3a3f47",
-        padding: 20,
-        minWidth: 300,
+        padding: 24,
+        minWidth: 320,
         alignItems: "center",
-        gap: 12,
+        gap: 16,
+        shadowColor: "#000",
+        shadowOffset: {
+            width: 0,
+            height: 4,
+        },
+        shadowOpacity: 0.3,
+        shadowRadius: 4.65,
+        elevation: 8,
     },
     iconContainer: {
-        width: 50,
-        height: 50,
-        borderRadius: 25,
+        width: 60,
+        height: 60,
+        borderRadius: 30,
         backgroundColor: "rgba(78, 205, 196, 0.15)",
-        alignItems: "center",
         justifyContent: "center",
+        alignItems: "center",
+        marginBottom: 8,
     },
     headerText: {
-        fontSize: 18,
-        fontWeight: "600",
+        fontSize: 20,
+        fontWeight: "bold",
         color: COLORS.PRIMARY_TEXT,
+        marginBottom: 4,
     },
     divider: {
-        height: 0.5,
+        height: 1,
         backgroundColor: "#3a3f47",
         width: "100%",
+        marginBottom: 8,
     },
     detailsContainer: {
         width: "100%",
-        gap: 12,
+        gap: 16,
     },
     detailRow: {
-        gap: 4,
+        gap: 6,
     },
     label: {
-        fontSize: 12,
+        fontSize: 13,
         color: "#888",
+        fontWeight: "500",
+        textTransform: "uppercase",
+        letterSpacing: 0.5,
     },
     value: {
-        fontSize: 14,
+        fontSize: 16,
         color: COLORS.PRIMARY_TEXT,
+        fontWeight: "500",
+        lineHeight: 22,
     },
     buttonsContainer: {
-        marginTop: 8,
+        flexDirection: "row",
+        width: "100%",
+        justifyContent: "center", // Centered close button
+        marginTop: 12,
     },
 })
 

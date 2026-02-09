@@ -63,6 +63,16 @@ export const todoSlice = createSlice({
                     archivedAt: new Date().toISOString()
                 } : todo)
         },
+        archiveAllTodos: (
+            state: TodoState,
+        ) => {
+            state.todos = state.todos.map((todo) =>
+                todo.isCompleted ? {
+                    ...todo,
+                    isArchived: true,
+                    archivedAt: new Date().toISOString()
+                } : todo)
+        },
         clearArchive: (
             state: TodoState,
         ) => {
@@ -71,7 +81,7 @@ export const todoSlice = createSlice({
     },
 });
 
-export const { addTodo, deleteTodo, editTodo, checkTodo, archiveTodo, clearArchive } = todoSlice.actions
+export const { addTodo, deleteTodo, editTodo, checkTodo, archiveTodo, archiveAllTodos, clearArchive } = todoSlice.actions
 
 export const selectTodos = (state: { todo: TodoState }): TodoState['todos'] =>
     state.todo.todos

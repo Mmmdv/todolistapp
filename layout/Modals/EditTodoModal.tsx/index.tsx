@@ -17,6 +17,7 @@ type EditTodoModalProps = {
 const EditTodoModal: React.FC<EditTodoModalProps> = ({
     isOpen, onClose, onUpdate, title }) => {
 
+    const [isFocused, setIsFocused] = useState(false)
     const [updatedTitle, setUpdateTitle] = useState(title)
     const [inputError, setInputError] = useState(false)
 
@@ -30,6 +31,7 @@ const EditTodoModal: React.FC<EditTodoModalProps> = ({
         if (isOpen) {
             setUpdateTitle(title)
             setInputError(false)
+            setIsFocused(false)
         }
     }, [isOpen, title])
 
@@ -49,15 +51,23 @@ const EditTodoModal: React.FC<EditTodoModalProps> = ({
                     <Ionicons name="create-outline" size={28} color="#5BC0EB" />
                 </View>
 
-                <StyledText style={styles.headerText}>Edit Task</StyledText>
+                <StyledText style={styles.headerText}>Edit task</StyledText>
 
-                <View style={[styles.inputWrapper, inputError && styles.inputError]}>
+                <View style={styles.divider} />
+
+                <View style={[
+                    styles.inputWrapper,
+                    isFocused && styles.inputFocused,
+                    inputError && styles.inputError
+                ]}>
                     <TextInput
                         style={styles.textInput}
                         placeholder="Update your task..."
                         placeholderTextColor="#666"
                         value={updatedTitle}
                         onChangeText={setUpdateTitle}
+                        onFocus={() => setIsFocused(true)}
+                        onBlur={() => setIsFocused(false)}
                         multiline={true}
                     />
                 </View>
@@ -103,15 +113,24 @@ const styles = StyleSheet.create({
         fontWeight: "600",
         color: COLORS.PRIMARY_TEXT,
     },
+    divider: {
+        height: 0.5,
+        backgroundColor: "#3a3f47",
+        width: "100%",
+    },
     inputWrapper: {
-        backgroundColor: "#1c1f24",
+        backgroundColor: "#151616ff",
         borderRadius: 12,
-        borderWidth: 0.5,
+        borderWidth: 1,
         borderColor: "#3a3f47",
         paddingHorizontal: 12,
         paddingVertical: 10,
         minHeight: 60,
         width: "100%",
+    },
+    inputFocused: {
+        borderColor: "#888282ff",
+        backgroundColor: "#151616ff",
     },
     inputError: {
         borderColor: COLORS.ERROR_INPUT_TEXT,

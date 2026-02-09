@@ -2,8 +2,9 @@ import StyledText from "@/components/StyledText"
 import { COLORS } from "@/constants/ui"
 import { Todo } from "@/types/todo"
 import { Ionicons } from "@expo/vector-icons"
-import { useState } from "react"
-import { ScrollView, StyleSheet, TouchableOpacity, View } from "react-native"
+import { useEffect, useRef, useState } from "react"
+import { LayoutAnimation, ScrollView, StyleSheet, TouchableOpacity, View } from "react-native"
+import ArchiveAllModal from "../Modals/ArchiveAllModal.tsx"
 import ClearArchiveModal from "../Modals/ClearArchiveModal.tsx"
 import TodoItem from "../TodoItem"
 
@@ -16,6 +17,7 @@ type TodoListProps = {
     onCheckTodo: (id: Todo["id"]) => void
     onEditTodo: (id: Todo["id"], title: Todo["title"]) => void
     onArchiveTodo: (id: Todo["id"]) => void
+    onArchiveAll?: () => void
     onClearArchive: () => void
     archivedTodos: Todo[]
 }
@@ -53,7 +55,7 @@ const SortControls = ({
     </View>
 )
 
-const TodoList: React.FC<TodoListProps> = ({ todos, onDeleteTodo, onCheckTodo, onEditTodo, onArchiveTodo, onClearArchive, archivedTodos }) => {
+const TodoList: React.FC<TodoListProps> = ({ todos, onDeleteTodo, onCheckTodo, onEditTodo, onArchiveTodo, onClearArchive, archivedTodos, onArchiveAll }) => {
     // Separate sort states for each section
     const [todoSortBy, setTodoSortBy] = useState<SortBy>("date")
     const [todoSortOrder, setTodoSortOrder] = useState<SortOrder>("desc")
@@ -66,10 +68,32 @@ const TodoList: React.FC<TodoListProps> = ({ todos, onDeleteTodo, onCheckTodo, o
     const [doneExpanded, setDoneExpanded] = useState(true)
     const [archiveExpanded, setArchiveExpanded] = useState(false)
     const [isClearArchiveModalOpen, setIsClearArchiveModalOpen] = useState(false)
+    const [isArchiveAllModalOpen, setIsArchiveAllModalOpen] = useState(false)
 
     // Filter todos into pending and completed (non-archived)
     const pendingTodos = todos.filter(todo => !todo.isCompleted && !todo.isArchived)
     const completedTodos = todos.filter(todo => todo.isCompleted && !todo.isArchived)
+
+    // Track previous pending count to auto-expand when adding new tasks
+    const prevPendingCount = useRef(pendingTodos.length)
+    // Track previous completed count to auto-expand when completing tasks
+    const prevCompletedCount = useRef(completedTodos.length)
+
+    useEffect(() => {
+        // If pending tasks increased (new task added), expand the To Do section
+        if (pendingTodos.length > prevPendingCount.current) {
+            setTodoExpanded(true)
+        }
+        prevPendingCount.current = pendingTodos.length
+    }, [pendingTodos.length])
+
+    useEffect(() => {
+        // If completed tasks increased (task completed), expand the Done section
+        if (completedTodos.length > prevCompletedCount.current) {
+            setDoneExpanded(true)
+        }
+        prevCompletedCount.current = completedTodos.length
+    }, [completedTodos.length])
 
     // Sort function for pending todos (by createdAt)
     const sortPendingTodos = (todoList: Todo[], sortBy: SortBy, sortOrder: SortOrder) => {
@@ -141,13 +165,39 @@ const TodoList: React.FC<TodoListProps> = ({ todos, onDeleteTodo, onCheckTodo, o
         )
     }
 
+    // Custom LayoutAnimation for smoother/slower toggling
+    const toggleAnimation = {
+        duration: 700,
+        create: {
+            duration: 700,
+            type: LayoutAnimation.Types.spring,
+            property: LayoutAnimation.Properties.opacity,
+            springDamping: 0.7,
+        },
+        update: {
+            duration: 700,
+            type: LayoutAnimation.Types.spring,
+            springDamping: 0.7,
+        },
+        delete: {
+            duration: 500,
+            type: LayoutAnimation.Types.spring,
+            property: LayoutAnimation.Properties.opacity,
+            springDamping: 0.7,
+        },
+    };
+
     return (
         <ScrollView style={styles.container}>
             {/* To Do Section */}
             <View style={styles.sectionContainer}>
                 <TouchableOpacity
-                    style={styles.sectionHeader}
-                    onPress={() => setTodoExpanded(!todoExpanded)}
+                    style={[styles.sectionHeader, sortedPendingTodos.length === 0 && { opacity: 0.5 }]}
+                    onPress={() => {
+                        LayoutAnimation.configureNext(toggleAnimation);
+                        setTodoExpanded(!todoExpanded);
+                    }}
+                    disabled={sortedPendingTodos.length === 0}
                 >
                     <View style={styles.sectionTitleContainer}>
                         <Ionicons
@@ -160,7 +210,7 @@ const TodoList: React.FC<TodoListProps> = ({ todos, onDeleteTodo, onCheckTodo, o
                         </StyledText>
                     </View>
                     <View style={styles.sectionControls}>
-                        {todoExpanded && (
+                        {todoExpanded && sortedPendingTodos.length > 0 && (
                             <SortControls
                                 sortBy={todoSortBy}
                                 sortOrder={todoSortOrder}
@@ -169,7 +219,7 @@ const TodoList: React.FC<TodoListProps> = ({ todos, onDeleteTodo, onCheckTodo, o
                             />
                         )}
                         <Ionicons
-                            name={todoExpanded ? "chevron-up" : "chevron-down"}
+                            name={todoExpanded && sortedPendingTodos.length > 0 ? "chevron-up" : "chevron-down"}
                             size={20}
                             color={COLORS.PRIMARY_TEXT}
                         />
@@ -197,8 +247,12 @@ const TodoList: React.FC<TodoListProps> = ({ todos, onDeleteTodo, onCheckTodo, o
             {/* Done Section */}
             <View style={styles.sectionContainer}>
                 <TouchableOpacity
-                    style={styles.sectionHeader}
-                    onPress={() => setDoneExpanded(!doneExpanded)}
+                    style={[styles.sectionHeader, sortedCompletedTodos.length === 0 && { opacity: 0.5 }]}
+                    onPress={() => {
+                        LayoutAnimation.configureNext(toggleAnimation);
+                        setDoneExpanded(!doneExpanded);
+                    }}
+                    disabled={sortedCompletedTodos.length === 0}
                 >
                     <View style={styles.sectionTitleContainer}>
                         <Ionicons
@@ -206,104 +260,115 @@ const TodoList: React.FC<TodoListProps> = ({ todos, onDeleteTodo, onCheckTodo, o
                             size={24}
                             color="#4ECDC4"
                         />
-                        <StyledText style={styles.sectionTitle}>
-                            Done ({sortedCompletedTodos.length})
-                        </StyledText>
+                        <StyledText style={styles.sectionTitle}>Done ({sortedCompletedTodos.length})</StyledText>
                     </View>
-                    <View style={styles.sectionControls}>
-                        {doneExpanded && (
-                            <SortControls
-                                sortBy={doneSortBy}
-                                sortOrder={doneSortOrder}
-                                onToggleSortBy={() => setDoneSortBy(prev => prev === "date" ? "text" : "date")}
-                                onToggleSortOrder={() => setDoneSortOrder(prev => prev === "asc" ? "desc" : "asc")}
-                            />
-                        )}
-                        <Ionicons
-                            name={doneExpanded ? "chevron-up" : "chevron-down"}
-                            size={20}
-                            color={COLORS.PRIMARY_TEXT}
-                        />
-                    </View>
-                </TouchableOpacity>
-                {doneExpanded && sortedCompletedTodos.map(item => (
-                    <TodoItem
-                        key={item.id}
-                        id={item.id}
-                        title={item.title}
-                        isCompleted={item.isCompleted}
-                        createdAt={item.createdAt}
-                        completedAt={item.completedAt}
-                        updatedAt={item.updatedAt}
-                        deleteTodo={onDeleteTodo}
-                        checkTodo={onCheckTodo}
-                        editTodo={onEditTodo}
-                        archiveTodo={onArchiveTodo}
-                    />
-                ))}
-            </View>
-
-            {/* Divider */}
-            <View style={styles.sectionDivider} />
-
-            {/* Archive Section */}
-            <View style={styles.sectionContainer}>
-                <TouchableOpacity
-                    style={styles.sectionHeader}
-                    onPress={() => setArchiveExpanded(!archiveExpanded)}
-                    activeOpacity={0.7}
-                >
-                    <View style={styles.sectionTitleContainer}>
-                        <Ionicons
-                            name="archive"
-                            size={24}
-                            color="#888"
-                        />
-                        <StyledText style={styles.sectionTitle}>
-                            Archive ({archivedTodos.length})
-                        </StyledText>
-                    </View>
-                    <View style={styles.sectionControls}>
-                        {archivedTodos.length > 0 && (
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                        {sortedCompletedTodos.length > 0 && onArchiveAll && (
                             <TouchableOpacity
-                                onPress={() => setIsClearArchiveModalOpen(true)}
-                                style={{ marginRight: 10 }}
+                                onPress={() => setIsArchiveAllModalOpen(true)}
+                                style={{ padding: 4 }}
                             >
-                                <Ionicons name="trash-outline" size={20} color="#FF6B6B" />
+                                <Ionicons name="archive-outline" size={20} color={COLORS.PRIMARY_TEXT} />
                             </TouchableOpacity>
                         )}
-                        {archiveExpanded && (
-                            <SortControls
-                                sortBy={archiveSortBy}
-                                sortOrder={archiveSortOrder}
-                                onToggleSortBy={() => setArchiveSortBy(archiveSortBy === "date" ? "text" : "date")}
-                                onToggleSortOrder={() => setArchiveSortOrder(archiveSortOrder === "asc" ? "desc" : "asc")}
-                            />
-                        )}
                         <Ionicons
-                            name={archiveExpanded ? "chevron-up" : "chevron-down"}
+                            name={doneExpanded ? "chevron-down" : "chevron-forward"}
                             size={20}
                             color={COLORS.PRIMARY_TEXT}
                         />
                     </View>
                 </TouchableOpacity>
-                {archiveExpanded && sortedArchivedTodos.map(item => (
-                    <TodoItem
-                        key={item.id}
-                        id={item.id}
-                        title={item.title}
-                        isCompleted={item.isCompleted}
-                        isArchived={item.isArchived}
-                        createdAt={item.createdAt}
-                        completedAt={item.completedAt}
-                        updatedAt={item.updatedAt}
-                        archivedAt={item.archivedAt}
-                        deleteTodo={onDeleteTodo}
-                        checkTodo={onCheckTodo}
-                        editTodo={onEditTodo}
-                    />
-                ))}
+
+                {doneExpanded && (
+                    <View style={styles.listContainer}>
+                        {sortedCompletedTodos.map((item) => (
+                            <TodoItem
+                                key={item.id}
+                                {...item}
+                                deleteTodo={onDeleteTodo}
+                                checkTodo={onCheckTodo}
+                                editTodo={onEditTodo}
+                                archiveTodo={onArchiveTodo}
+                            />
+                        ))}
+                    </View>
+                )}
+
+                {/* Divider */}
+                <View style={styles.sectionDivider} />
+
+                {/* Archive Section */}
+                <View style={styles.sectionContainer}>
+                    <TouchableOpacity
+                        style={[styles.sectionHeader, sortedArchivedTodos.length === 0 && { opacity: 0.5 }]}
+                        onPress={() => {
+                            LayoutAnimation.configureNext(toggleAnimation);
+                            setArchiveExpanded(!archiveExpanded);
+                        }}
+                        activeOpacity={0.7}
+                        disabled={sortedArchivedTodos.length === 0}
+                    >
+                        <View style={styles.sectionTitleContainer}>
+                            <Ionicons
+                                name="archive"
+                                size={24}
+                                color="#888"
+                            />
+                            <StyledText style={styles.sectionTitle}>
+                                Archive ({archivedTodos.length})
+                            </StyledText>
+                        </View>
+                        <View style={styles.sectionControls}>
+                            {archivedTodos.length > 0 && (
+                                <TouchableOpacity
+                                    onPress={() => setIsClearArchiveModalOpen(true)}
+                                    style={{ marginRight: 10 }}
+                                >
+                                    <Ionicons name="trash-outline" size={20} color="#FF6B6B" />
+                                </TouchableOpacity>
+                            )}
+                            {archiveExpanded && sortedArchivedTodos.length > 0 && (
+                                <SortControls
+                                    sortBy={archiveSortBy}
+                                    sortOrder={archiveSortOrder}
+                                    onToggleSortBy={() => setArchiveSortBy(archiveSortBy === "date" ? "text" : "date")}
+                                    onToggleSortOrder={() => setArchiveSortOrder(archiveSortOrder === "asc" ? "desc" : "asc")}
+                                />
+                            )}
+                            <Ionicons
+                                name={archiveExpanded && sortedArchivedTodos.length > 0 ? "chevron-up" : "chevron-down"}
+                                size={20}
+                                color={COLORS.PRIMARY_TEXT}
+                            />
+                        </View>
+                    </TouchableOpacity>
+                    {archiveExpanded && sortedArchivedTodos.map(item => (
+                        <TodoItem
+                            key={item.id}
+                            id={item.id}
+                            title={item.title}
+                            isCompleted={item.isCompleted}
+                            isArchived={item.isArchived}
+                            createdAt={item.createdAt}
+                            completedAt={item.completedAt}
+                            updatedAt={item.updatedAt}
+                            archivedAt={item.archivedAt}
+                            deleteTodo={onDeleteTodo}
+                            checkTodo={onCheckTodo}
+                            editTodo={onEditTodo}
+                            archiveTodo={onArchiveTodo}
+                        />
+                    ))}
+                </View>
             </View>
+
+            {onArchiveAll && (
+                <ArchiveAllModal
+                    isOpen={isArchiveAllModalOpen}
+                    onClose={() => setIsArchiveAllModalOpen(false)}
+                    onArchiveAll={onArchiveAll}
+                />
+            )}
 
             <ClearArchiveModal
                 isOpen={isClearArchiveModalOpen}

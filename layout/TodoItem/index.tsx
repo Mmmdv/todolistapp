@@ -4,7 +4,7 @@ import { COLORS } from "@/constants/ui"
 import { Todo } from "@/types/todo"
 import { Ionicons } from "@expo/vector-icons"
 import * as Haptics from "expo-haptics"
-import { useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { Animated, StyleSheet, TouchableOpacity, View } from "react-native"
 import ArchiveTodoModal from "../Modals/ArchiveTodoModal.tsx"
 import DeleteTodoModal from "../Modals/DeleteTodoModal.tsx"
@@ -18,6 +18,7 @@ type TodoItemProps = Todo & {
     archiveTodo?: (id: Todo["id"]) => void
 }
 
+const IDEA_COLORS = ["#FFD700", "#FFA500", "#FFFF00", "#FCD34D", "#F59E0B"]
 const STAR_COLORS = ["#FFD700", "#FF6B6B", "#4ECDC4", "#A855F7", "#F97316"]
 
 const TodoItem: React.FC<TodoItemProps> = ({ id, title, isCompleted, isArchived, createdAt, completedAt, updatedAt, archivedAt, checkTodo, deleteTodo, editTodo, archiveTodo }) => {
@@ -34,9 +35,10 @@ const TodoItem: React.FC<TodoItemProps> = ({ id, title, isCompleted, isArchived,
     const [isArchiveModalOpen, setIsArchiveModalOpen] = useState(false)
     const [isViewModalOpen, setIsViewModalOpen] = useState(false)
     const [showCelebrate, setShowCelebrate] = useState(false)
+    const [celebrationType, setCelebrationType] = useState<'idea' | 'star'>('idea')
 
-    // Animation values for 5 stars
-    const starAnimations = useRef(
+    // Animation values for 5 ideas
+    const ideaAnimations = useRef(
         Array.from({ length: 5 }, () => ({
             scale: new Animated.Value(0),
             opacity: new Animated.Value(0),
@@ -59,19 +61,44 @@ const TodoItem: React.FC<TodoItemProps> = ({ id, title, isCompleted, isArchived,
         setIsEditModalOpen(true)
     }
 
+    // Handle check with animation
+    const handleCheckToken = () => {
+        if (!isCompleted) {
+            setCelebrationType('star')
+            playCelebration()
+            // Delay the actual check action to let animation play
+            setTimeout(() => {
+                checkTodo(id)
+            }, 600) // Slightly shorter than animation duration
+        } else {
+            checkTodo(id)
+        }
+    }
+
+    // Check if it's a new task (created within last 2 seconds)
+    useEffect(() => {
+        const now = new Date().getTime()
+        const created = new Date(createdAt).getTime()
+        // If created within last 2 seconds (to be safe against re-renders)
+        if (now - created < 2000) {
+            setCelebrationType('idea')
+            playCelebration()
+        }
+    }, [])
+
     const playCelebration = () => {
         setShowCelebrate(true)
 
         // Reset animations
-        starAnimations.forEach((anim) => {
+        ideaAnimations.forEach((anim) => {
             anim.scale.setValue(0)
             anim.opacity.setValue(1)
             anim.translateX.setValue(0)
             anim.translateY.setValue(0)
         })
 
-        // Start animations for each star with different delays
-        const animations = starAnimations.map((anim, index) => {
+        // Start animations for each idea with different delays
+        const animations = ideaAnimations.map((anim, index) => {
             const angle = (index / 5) * 2 * Math.PI
             const distance = 80 + Math.random() * 60
 
@@ -106,7 +133,7 @@ const TodoItem: React.FC<TodoItemProps> = ({ id, title, isCompleted, isArchived,
             ])
         })
 
-        Animated.stagger(50, animations).start(() => {
+        Animated.stagger(100, animations).start(() => {
             setShowCelebrate(false)
         })
     }
@@ -123,15 +150,58 @@ const TodoItem: React.FC<TodoItemProps> = ({ id, title, isCompleted, isArchived,
         }
     }
 
+    // Enter animation
+    const fadeAnim = useRef(new Animated.Value(0)).current; // Opacity
+    const scaleAnim = useRef(new Animated.Value(0.9)).current; // Scale
+    const translateAnim = useRef(new Animated.Value(20)).current; // Slide up
+
+    useEffect(() => {
+        Animated.parallel([
+            Animated.timing(fadeAnim, {
+                toValue: 1,
+                duration: 400,
+                useNativeDriver: true,
+            }),
+            Animated.spring(scaleAnim, {
+                toValue: 1,
+                friction: 6,
+                tension: 40,
+                useNativeDriver: true,
+            }),
+            Animated.spring(translateAnim, {
+                toValue: 0,
+                friction: 6,
+                tension: 40,
+                useNativeDriver: true,
+            })
+        ]).start();
+    }, []);
+
+    const backgroundColor = fadeAnim.interpolate({
+        inputRange: [0, 1],
+        outputRange: [COLORS.PRIMARY_BORDER_DARK, COLORS.SECONDARY_BACKGROUND] // Flash effect
+        // Flash from a slightly lighter/border color to background
+    });
+
     return (
-        <View style={styles.container}>
+        <Animated.View style={[
+            styles.container,
+            {
+                opacity: fadeAnim,
+                transform: [
+                    { scale: scaleAnim },
+                    { translateY: translateAnim }
+                ],
+                backgroundColor: backgroundColor // Animated background
+            }
+        ]}>
             <View style={styles.checKTitleConainer}>
                 {!isArchived && (
                     <View style={styles.checkboxWrapper}>
                         <StyledCheckBox
                             checked={isCompleted}
-                            onCheck={onCheckTodo} />
-                        {showCelebrate && starAnimations.map((anim, index) => (
+                            onCheck={handleCheckToken} />
+                        {showCelebrate && ideaAnimations.map((anim, index) => (
                             <Animated.View
                                 key={index}
                                 style={[
@@ -146,28 +216,44 @@ const TodoItem: React.FC<TodoItemProps> = ({ id, title, isCompleted, isArchived,
                                     }
                                 ]}
                             >
-                                <Ionicons name="star" size={20} color={STAR_COLORS[index]} />
+                                <Ionicons
+                                    name={celebrationType === 'idea' ? "bulb" : "star"}
+                                    size={24}
+                                    color={celebrationType === 'idea' ? IDEA_COLORS[index] : STAR_COLORS[index]}
+                                />
                             </Animated.View>
                         ))}
                     </View>
                 )}
                 <TouchableOpacity
                     style={styles.textContainer}
-                    onPress={isCompleted ? () => setIsViewModalOpen(true) : undefined}
-                    activeOpacity={isCompleted ? 0.7 : 1}
-                    disabled={!isCompleted}
+                    onPress={isCompleted ? () => setIsViewModalOpen(true) : handleCheckToken}
+                    activeOpacity={0.7}
                 >
-                    <StyledText
-                        numberOfLines={1}
-                        ellipsizeMode="tail"
-                        style={[{
-                            textDecorationLine: isCompleted ? "line-through" : "none",
-                            fontSize: 14,
-                            flexShrink: 1,
-                            opacity: isCompleted ? 0.6 : 1,
-                        }]}>
-                        {title}
-                    </StyledText>
+                    <View style={{ position: 'relative', alignSelf: 'flex-start' }}>
+                        {/* alignSelf: flex-start ensures container wraps text tightly so line is correct width */}
+                        <StyledText
+                            numberOfLines={1}
+                            ellipsizeMode="tail"
+                            style={[{
+                                fontSize: 14,
+                                flexShrink: 1,
+                                opacity: isArchived ? 0.9 : (isCompleted ? 0.7 : 1),
+                            }]}>
+                            {title}
+                        </StyledText>
+                        {isCompleted && !isArchived && (
+                            <View style={{
+                                position: 'absolute',
+                                left: 0,
+                                right: 0,
+                                top: '50%',
+                                height: 1,
+                                backgroundColor: COLORS.PRIMARY_TEXT, // Or '#888' if too dark
+                                opacity: 0.4 // "More clear" (was 0.2)
+                            }} />
+                        )}
+                    </View>
                     {/* Pending items show create date and edit date */}
                     {!isCompleted && createdAt && (
                         <StyledText style={styles.dateText}>
@@ -181,13 +267,13 @@ const TodoItem: React.FC<TodoItemProps> = ({ id, title, isCompleted, isArchived,
                     )}
                     {/* Completed items show only done date */}
                     {isCompleted && !isArchived && completedAt && (
-                        <StyledText style={[styles.dateText, { color: '#4ECDC4' }]}>
+                        <StyledText style={[styles.dateText, { color: '#4ECDC4', fontSize: 10 }]}>
                             ✅ {formatDate(completedAt)} • Tap for details
                         </StyledText>
                     )}
                 </TouchableOpacity>
             </View>
-            <View style={styles.controlsContainer}>
+            <View style={styles.controlsContainer} onStartShouldSetResponder={() => true}>
 
                 {/* Pending items: edit and delete buttons */}
                 {!isCompleted && !isArchived && (
@@ -244,7 +330,7 @@ const TodoItem: React.FC<TodoItemProps> = ({ id, title, isCompleted, isArchived,
                 />
 
             </View>
-        </View >
+        </Animated.View >
     )
 }
 
@@ -276,7 +362,7 @@ const styles = StyleSheet.create({
         gap: 15,
         flex: 1,
         flexShrink: 1,
-        marginRight: 10,
+        marginRight: 25, // Increased safe zone
         overflow: "visible",
     },
     checkboxWrapper: {

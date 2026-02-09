@@ -10,6 +10,7 @@ type TodoCreatorProps = {
 
 const TodoCreator: React.FC<TodoCreatorProps> = ({ onAddTodo }) => {
 
+    const [isFocused, setIsFocused] = useState(false)
     const [text, setText] = useState("")
     const [inputError, setInputError] = useState(false)
 
@@ -31,14 +32,20 @@ const TodoCreator: React.FC<TodoCreatorProps> = ({ onAddTodo }) => {
 
     return (
         <View style={styles.container}>
-            <View style={[styles.inputContainer, inputError && styles.inputError]}>
-                <Ionicons name="add-outline" size={20} color="#666" style={styles.inputIcon} />
+            <View style={[
+                styles.inputContainer,
+                isFocused && styles.inputFocused,
+                inputError && styles.inputError
+            ]}>
+                <Ionicons name="add-outline" size={20} color={isFocused ? "#ffffff" : "#666"} style={styles.inputIcon} />
                 <TextInput
                     style={styles.textInput}
                     placeholder="Add a new task..."
                     placeholderTextColor="#666"
                     value={text}
                     onChangeText={setText}
+                    onFocus={() => setIsFocused(true)}
+                    onBlur={() => setIsFocused(false)}
                     onSubmitEditing={onPressAdd}
                     returnKeyType="done"
                 />
@@ -69,13 +76,17 @@ const styles = StyleSheet.create({
         flex: 1,
         flexDirection: "row",
         alignItems: "center",
-        backgroundColor: COLORS.SECONDARY_BACKGROUND,
+        backgroundColor: "#151616ff",
         borderRadius: 15,
-        borderWidth: 0.5,
-        borderColor: "#3a3f47",
+        borderWidth: 1,
+        borderColor: "#606875ff",
         paddingHorizontal: 12,
-        paddingVertical: 10,
+        paddingVertical: 12, // Increased padding for better look
         gap: 8,
+    },
+    inputFocused: {
+        borderColor: "#888282ff",
+        backgroundColor: "#1c1f24",
     },
     inputError: {
         borderColor: COLORS.ERROR_INPUT_TEXT,

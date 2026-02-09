@@ -29,7 +29,9 @@ const ArchiveTodoModal: React.FC<ArchiveTodoModalProps> = ({
                     <Ionicons name="archive-outline" size={28} color="#888" />
                 </View>
 
-                <StyledText style={styles.headerText}>Archive Task?</StyledText>
+                <StyledText style={styles.headerText}>Archive task?</StyledText>
+
+                <View style={styles.divider} />
 
                 <StyledText style={styles.messageText}>
                     This task will be moved to archive.
@@ -75,6 +77,11 @@ const styles = StyleSheet.create({
         fontSize: 18,
         fontWeight: "600",
         color: COLORS.PRIMARY_TEXT,
+    },
+    divider: {
+        height: 0.5,
+        backgroundColor: "#3a3f47",
+        width: "100%",
     },
     messageText: {
         fontSize: 14,
