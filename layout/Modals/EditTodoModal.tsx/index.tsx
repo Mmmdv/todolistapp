@@ -1,11 +1,12 @@
-import StyledButton from "@/components/StyledButton"
-import StyledModal from "@/components/StyledModal"
-import StyledText from "@/components/StyledText"
-import { COLORS } from "@/constants/ui"
-import { Todo } from "@/types/todo"
-import { Ionicons } from "@expo/vector-icons"
-import { useEffect, useState } from "react"
-import { StyleSheet, TextInput, View } from "react-native"
+import StyledButton from "@/components/StyledButton";
+import StyledModal from "@/components/StyledModal";
+import StyledText from "@/components/StyledText";
+import { modalStyles } from "@/constants/modalStyles";
+import { COLORS } from "@/constants/ui";
+import { Todo } from "@/types/todo";
+import { Ionicons } from "@expo/vector-icons";
+import { useEffect, useState } from "react";
+import { StyleSheet, TextInput, View } from "react-native";
 
 type EditTodoModalProps = {
     isOpen: boolean
@@ -22,9 +23,7 @@ const EditTodoModal: React.FC<EditTodoModalProps> = ({
     const [inputError, setInputError] = useState(false)
 
     useEffect(() => {
-        if (inputError && updatedTitle) {
-            setInputError(false)
-        }
+        if (inputError && updatedTitle) setInputError(false)
     }, [updatedTitle])
 
     useEffect(() => {
@@ -46,22 +45,22 @@ const EditTodoModal: React.FC<EditTodoModalProps> = ({
 
     return (
         <StyledModal isOpen={isOpen} onClose={onClose}>
-            <View style={styles.modalContainer}>
-                <View style={styles.iconContainer}>
+            <View style={modalStyles.modalContainer}>
+                <View style={[modalStyles.iconContainer, { backgroundColor: "rgba(91, 192, 235, 0.15)" }]}>
                     <Ionicons name="create-outline" size={28} color="#5BC0EB" />
                 </View>
 
-                <StyledText style={styles.headerText}>Edit task</StyledText>
+                <StyledText style={modalStyles.headerText}>Edit task</StyledText>
 
-                <View style={styles.divider} />
+                <View style={modalStyles.divider} />
 
                 <View style={[
-                    styles.inputWrapper,
-                    isFocused && styles.inputFocused,
-                    inputError && styles.inputError
+                    localStyles.inputWrapper,
+                    isFocused && localStyles.inputFocused,
+                    inputError && localStyles.inputError
                 ]}>
                     <TextInput
-                        style={styles.textInput}
+                        style={localStyles.textInput}
                         placeholder="Update your task..."
                         placeholderTextColor="#666"
                         value={updatedTitle}
@@ -72,7 +71,7 @@ const EditTodoModal: React.FC<EditTodoModalProps> = ({
                     />
                 </View>
 
-                <View style={styles.buttonsContainer}>
+                <View style={modalStyles.buttonsContainer}>
                     <StyledButton
                         label="Cancel"
                         onPress={onClose}
@@ -89,35 +88,7 @@ const EditTodoModal: React.FC<EditTodoModalProps> = ({
     )
 }
 
-const styles = StyleSheet.create({
-    modalContainer: {
-        backgroundColor: COLORS.SECONDARY_BACKGROUND,
-        borderRadius: 15,
-        borderWidth: 0.5,
-        borderColor: "#3a3f47",
-        padding: 20,
-        minWidth: 280,
-        alignItems: "center",
-        gap: 12,
-    },
-    iconContainer: {
-        width: 50,
-        height: 50,
-        borderRadius: 25,
-        backgroundColor: "rgba(91, 192, 235, 0.15)",
-        alignItems: "center",
-        justifyContent: "center",
-    },
-    headerText: {
-        fontSize: 18,
-        fontWeight: "600",
-        color: COLORS.PRIMARY_TEXT,
-    },
-    divider: {
-        height: 0.5,
-        backgroundColor: "#3a3f47",
-        width: "100%",
-    },
+const localStyles = StyleSheet.create({
     inputWrapper: {
         backgroundColor: "#151616ff",
         borderRadius: 12,
@@ -139,12 +110,6 @@ const styles = StyleSheet.create({
         color: COLORS.PRIMARY_TEXT,
         fontSize: 14,
         minHeight: 40,
-    },
-    buttonsContainer: {
-        flexDirection: "row",
-        justifyContent: "center",
-        gap: 10,
-        marginTop: 8,
     },
 })
 

@@ -1,7 +1,9 @@
 import StyledButton from "@/components/StyledButton";
 import StyledModal from "@/components/StyledModal";
 import StyledText from "@/components/StyledText";
+import { modalStyles } from "@/constants/modalStyles";
 import { COLORS } from "@/constants/ui";
+import { formatDate } from "@/helpers/date";
 import { Todo } from "@/types/todo";
 import { Ionicons } from "@expo/vector-icons";
 import { StyleSheet, View } from "react-native";
@@ -15,13 +17,6 @@ type ViewTodoModalProps = {
     completedAt?: Todo["completedAt"]
 };
 
-const formatDate = (dateString: string) => {
-    const date = new Date(dateString)
-    const dateStr = date.toLocaleDateString('az-AZ', { day: '2-digit', month: '2-digit', year: 'numeric' })
-    const timeStr = date.toLocaleTimeString('az-AZ', { hour: '2-digit', minute: '2-digit' })
-    return `${dateStr} ${timeStr}`
-}
-
 const ViewTodoModal: React.FC<ViewTodoModalProps> = ({
     isOpen,
     onClose,
@@ -33,46 +28,46 @@ const ViewTodoModal: React.FC<ViewTodoModalProps> = ({
 
     return (
         <StyledModal isOpen={isOpen} onClose={onClose}>
-            <View style={styles.modalContainer}>
-                <View style={styles.iconContainer}>
+            <View style={[modalStyles.modalContainer, localStyles.container]}>
+                <View style={[modalStyles.iconContainer, { backgroundColor: "rgba(78, 205, 196, 0.15)" }]}>
                     <Ionicons name="checkmark-done-circle" size={28} color="#4ECDC4" />
                 </View>
 
-                <StyledText style={styles.headerText}>Task details</StyledText>
+                <StyledText style={[modalStyles.headerText, localStyles.headerText]}>Task details</StyledText>
 
-                <View style={styles.divider} />
+                <View style={modalStyles.divider} />
 
-                <View style={styles.detailsContainer}>
-                    <View style={styles.detailRow}>
-                        <StyledText style={styles.label}>Title</StyledText>
-                        <StyledText style={styles.value}>{title}</StyledText>
+                <View style={localStyles.detailsContainer}>
+                    <View style={localStyles.detailRow}>
+                        <StyledText style={localStyles.label}>Title</StyledText>
+                        <StyledText style={localStyles.value}>{title}</StyledText>
                     </View>
 
-                    <View style={styles.detailRow}>
-                        <StyledText style={styles.label}>🕐 Created</StyledText>
-                        <StyledText style={styles.value}>{formatDate(createdAt)}</StyledText>
+                    <View style={localStyles.detailRow}>
+                        <StyledText style={localStyles.label}>🕐 Created</StyledText>
+                        <StyledText style={localStyles.value}>{formatDate(createdAt)}</StyledText>
                     </View>
 
                     {updatedAt && (
-                        <View style={styles.detailRow}>
-                            <StyledText style={styles.label}>✏️ Edited</StyledText>
-                            <StyledText style={[styles.value, { color: '#5BC0EB' }]}>
+                        <View style={localStyles.detailRow}>
+                            <StyledText style={localStyles.label}>✏️ Edited</StyledText>
+                            <StyledText style={[localStyles.value, { color: '#5BC0EB' }]}>
                                 {formatDate(updatedAt)}
                             </StyledText>
                         </View>
                     )}
 
                     {completedAt && (
-                        <View style={styles.detailRow}>
-                            <StyledText style={styles.label}>✅ Completed</StyledText>
-                            <StyledText style={[styles.value, { color: '#4ECDC4' }]}>
+                        <View style={localStyles.detailRow}>
+                            <StyledText style={localStyles.label}>✅ Completed</StyledText>
+                            <StyledText style={[localStyles.value, { color: '#4ECDC4' }]}>
                                 {formatDate(completedAt)}
                             </StyledText>
                         </View>
                     )}
                 </View>
 
-                <View style={styles.buttonsContainer}>
+                <View style={[modalStyles.buttonsContainer, { justifyContent: "center" }]}>
                     <StyledButton
                         label="Close"
                         onPress={onClose}
@@ -84,45 +79,22 @@ const ViewTodoModal: React.FC<ViewTodoModalProps> = ({
     );
 };
 
-const styles = StyleSheet.create({
-    modalContainer: {
-        backgroundColor: COLORS.SECONDARY_BACKGROUND,
+const localStyles = StyleSheet.create({
+    container: {
         borderRadius: 20,
         borderWidth: 1,
-        borderColor: "#3a3f47",
         padding: 24,
         minWidth: 320,
-        alignItems: "center",
         gap: 16,
         shadowColor: "#000",
-        shadowOffset: {
-            width: 0,
-            height: 4,
-        },
+        shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.3,
         shadowRadius: 4.65,
         elevation: 8,
     },
-    iconContainer: {
-        width: 60,
-        height: 60,
-        borderRadius: 30,
-        backgroundColor: "rgba(78, 205, 196, 0.15)",
-        justifyContent: "center",
-        alignItems: "center",
-        marginBottom: 8,
-    },
     headerText: {
         fontSize: 20,
         fontWeight: "bold",
-        color: COLORS.PRIMARY_TEXT,
-        marginBottom: 4,
-    },
-    divider: {
-        height: 1,
-        backgroundColor: "#3a3f47",
-        width: "100%",
-        marginBottom: 8,
     },
     detailsContainer: {
         width: "100%",
@@ -143,12 +115,6 @@ const styles = StyleSheet.create({
         color: COLORS.PRIMARY_TEXT,
         fontWeight: "500",
         lineHeight: 22,
-    },
-    buttonsContainer: {
-        flexDirection: "row",
-        width: "100%",
-        justifyContent: "center", // Centered close button
-        marginTop: 12,
     },
 })
 

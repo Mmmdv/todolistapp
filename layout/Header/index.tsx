@@ -1,6 +1,6 @@
 import StyledText from "@/components/StyledText";
 import { COLORS } from "@/constants/ui";
-import { getFullFormatDate } from "@/helpsers/date";
+import { getFullFormatDate } from "@/helpers/date";
 import { StyleSheet, View } from "react-native";
 
 type HeaderProps = {

@@ -20,16 +20,9 @@ type StyledButtonProps = {
 
 const StyledButton: React.FC<StyledButtonProps> = ({ label, icon, size, variant, disabled, onPress, style, activeOpacity, vibrate }) => {
 
-    const textVariant = (() => {
-        if (size === "large") return "heading"
-        return "small"
-    })()
-
+    const textVariant = size === "large" ? "heading" : "small"
     const iconSize = size === "large" ? 27 : 17
-
-    const iconColor = (() => {
-        return COLORS.PRIMARY_ACTIVE_BUTTON_TEXT
-    })()
+    const iconColor = COLORS.PRIMARY_ACTIVE_BUTTON_TEXT
 
     const handlePress = () => {
         if (vibrate) {

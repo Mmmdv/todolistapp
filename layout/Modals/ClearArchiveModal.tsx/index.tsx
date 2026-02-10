@@ -1,9 +1,9 @@
 import StyledButton from "@/components/StyledButton";
 import StyledModal from "@/components/StyledModal";
 import StyledText from "@/components/StyledText";
-import { COLORS } from "@/constants/ui";
+import { modalStyles } from "@/constants/modalStyles";
 import { Ionicons } from "@expo/vector-icons";
-import { StyleSheet, View } from "react-native";
+import { View } from "react-native";
 
 type ClearArchiveModalProps = {
     isOpen: boolean
@@ -24,20 +24,20 @@ const ClearArchiveModal: React.FC<ClearArchiveModalProps> = ({
 
     return (
         <StyledModal isOpen={isOpen} onClose={onClose}>
-            <View style={styles.modalContainer}>
-                <View style={styles.iconContainer}>
+            <View style={modalStyles.modalContainer}>
+                <View style={[modalStyles.iconContainer, { backgroundColor: "rgba(255, 107, 107, 0.15)" }]}>
                     <Ionicons name="trash-outline" size={28} color="#FF6B6B" />
                 </View>
 
-                <StyledText style={styles.headerText}>Clear archive?</StyledText>
+                <StyledText style={modalStyles.headerText}>Clear archive?</StyledText>
 
-                <View style={styles.divider} />
+                <View style={modalStyles.divider} />
 
-                <StyledText style={styles.messageText}>
+                <StyledText style={modalStyles.messageText}>
                     Are you sure you want to delete all archived tasks? This action cannot be undone.
                 </StyledText>
 
-                <View style={styles.buttonsContainer}>
+                <View style={modalStyles.buttonsContainer}>
                     <StyledButton
                         label="Cancel"
                         onPress={onClose}
@@ -53,50 +53,5 @@ const ClearArchiveModal: React.FC<ClearArchiveModalProps> = ({
         </StyledModal>
     );
 };
-
-const styles = StyleSheet.create({
-    modalContainer: {
-        backgroundColor: COLORS.SECONDARY_BACKGROUND,
-        borderRadius: 15,
-        borderWidth: 0.5,
-        borderColor: "#3a3f47",
-        padding: 20,
-        minWidth: 280,
-        alignItems: "center",
-        gap: 12,
-    },
-    iconContainer: {
-        width: 50,
-        height: 50,
-        borderRadius: 25,
-        backgroundColor: "rgba(255, 107, 107, 0.15)",
-        alignItems: "center",
-        justifyContent: "center",
-    },
-    headerText: {
-        fontSize: 18,
-        fontWeight: "600",
-        color: COLORS.PRIMARY_TEXT,
-        marginBottom: 5,
-    },
-    divider: {
-        height: 0.5,
-        backgroundColor: "#3a3f47",
-        width: "100%",
-        marginBottom: 10,
-    },
-    messageText: {
-        fontSize: 14,
-        color: "#888",
-        textAlign: "center",
-        marginBottom: 10,
-    },
-    buttonsContainer: {
-        flexDirection: "row",
-        justifyContent: "center",
-        gap: 10,
-        marginTop: 5,
-    },
-})
 
 export default ClearArchiveModal
