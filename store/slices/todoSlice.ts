@@ -33,11 +33,12 @@ export const todoSlice = createSlice({
             action: PayloadAction<{
                 id: Todo["id"]
                 title: Todo["title"]
+                reminder?: string
             }>,
         ) => {
-            const { id, title } = action.payload;
+            const { id, title, reminder } = action.payload;
             state.todos = state.todos.map((todo) =>
-                todo.id === id ? { ...todo, title, updatedAt: new Date().toISOString() } : todo)
+                todo.id === id ? { ...todo, title, reminder, updatedAt: new Date().toISOString() } : todo)
         },
         checkTodo: (
             state: TodoState,

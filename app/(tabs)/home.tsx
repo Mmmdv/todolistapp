@@ -1,18 +1,15 @@
-import StyledText from "@/components/StyledText";
+import ComingSoon from "@/components/ComingSoon";
 import { useTheme } from "@/hooks/useTheme";
+import Header from "@/layout/Header";
 import { View } from "react-native";
 
-import Header from "@/layout/Header";
-
 export default function Home() {
-    const { colors, t } = useTheme();
+    const { colors } = useTheme();
 
     return (
         <View style={{ flex: 1, backgroundColor: colors.PRIMARY_BACKGROUND }}>
             <Header />
-            <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-                <StyledText>{t("tab_home")}</StyledText>
-            </View>
+            <ComingSoon />
         </View>
     );
 }

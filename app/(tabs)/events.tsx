@@ -3,7 +3,7 @@ import { useTheme } from "@/hooks/useTheme";
 import Header from "@/layout/Header";
 import { View } from "react-native";
 
-export default function Utilities() {
+export default function Events() {
     const { colors } = useTheme();
 
     return (

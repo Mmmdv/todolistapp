@@ -56,7 +56,7 @@ function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
             case "home": return isFocused ? "home" : "home-outline";
             case "index": return isFocused ? "list" : "list-outline";
             case "shopping": return isFocused ? "cart" : "cart-outline";
-            case "wedding": return isFocused ? "calendar" : "calendar-outline";
+            case "events": return isFocused ? "ticket" : "ticket-outline";
             case "movies": return isFocused ? "film" : "film-outline";
             case "utilities": return isFocused ? "flash" : "flash-outline";
             default: return "ellipse-outline";
@@ -68,7 +68,7 @@ function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
             case "home": return t("tab_home");
             case "index": return t("tab_todo");
             case "shopping": return t("tab_shopping");
-            case "wedding": return t("tab_wedding");
+            case "events": return t("tab_events");
             case "movies": return t("tab_movies");
             case "utilities": return t("tab_utilities");
             default: return "";

@@ -5,9 +5,12 @@ import { Ionicons } from "@expo/vector-icons";
 import React, { useState } from "react";
 import { Image, Share, StyleSheet, TouchableOpacity, View } from "react-native";
 
+import NotificationsModal from "@/layout/Modals/NotificationsModal";
+
 const Header: React.FC = () => {
   const { colors, t } = useTheme();
   const [settingsVisible, setSettingsVisible] = useState(false);
+  const [notificationsVisible, setNotificationsVisible] = useState(false);
 
   const onShare = async () => {
     try {
@@ -31,6 +34,9 @@ const Header: React.FC = () => {
         <TouchableOpacity onPress={() => setSettingsVisible(true)} activeOpacity={0.7} style={styles.iconButton}>
           <Ionicons name="settings-outline" size={22} color={colors.PRIMARY_TEXT} />
         </TouchableOpacity>
+        <TouchableOpacity onPress={() => setNotificationsVisible(true)} activeOpacity={0.7} style={styles.iconButton}>
+          <Ionicons name="notifications-outline" size={22} color={colors.PRIMARY_TEXT} />
+        </TouchableOpacity>
         <TouchableOpacity onPress={onShare} activeOpacity={0.7} style={styles.iconButton}>
           <Ionicons name="share-outline" size={22} color={colors.PRIMARY_TEXT} />
         </TouchableOpacity>
@@ -39,6 +45,10 @@ const Header: React.FC = () => {
       <SettingsModal
         visible={settingsVisible}
         onClose={() => setSettingsVisible(false)}
+      />
+      <NotificationsModal
+        visible={notificationsVisible}
+        onClose={() => setNotificationsVisible(false)}
       />
     </View>
   );

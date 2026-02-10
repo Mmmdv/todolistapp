@@ -17,11 +17,14 @@ import { styles } from "./styles"
 type TodoItemProps = Todo & {
     checkTodo: (id: Todo["id"]) => void
     deleteTodo: (id: Todo["id"]) => void
-    editTodo: (id: Todo["id"], title: Todo["title"]) => void
+    editTodo: (id: Todo["id"], title: Todo["title"], reminder?: string) => void
     archiveTodo?: (id: Todo["id"]) => void
 }
 
-const TodoItem: React.FC<TodoItemProps> = ({ id, title, isCompleted, isArchived, createdAt, completedAt, updatedAt, archivedAt, checkTodo, deleteTodo, editTodo, archiveTodo }) => {
+import { useTheme } from "@/hooks/useTheme"
+
+const TodoItem: React.FC<TodoItemProps> = ({ id, title, isCompleted, isArchived, createdAt, completedAt, updatedAt, archivedAt, reminder, checkTodo, deleteTodo, editTodo, archiveTodo }) => {
+    const { t } = useTheme();
     const [isEditModalOpen, setIsEditModalOpen] = useState(false)
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
     const [isArchiveModalOpen, setIsArchiveModalOpen] = useState(false)
@@ -133,8 +136,13 @@ const TodoItem: React.FC<TodoItemProps> = ({ id, title, isCompleted, isArchived,
                         <StyledText style={[styles.dateText, { color: '#5BC0EB' }]}>✏️ {formatDate(updatedAt)}</StyledText>
                     )}
                     {isCompleted && !isArchived && completedAt && (
-                        <StyledText style={[styles.dateText, { color: '#4ECDC4', fontSize: 10 }]}>
-                            ✅ {formatDate(completedAt)} • Tap for details
+                        <StyledText style={[styles.dateText, { color: '#6c757d', fontSize: 9 }]}>
+                            ✅ {formatDate(completedAt)} • {t("tap_for_details")}
+                        </StyledText>
+                    )}
+                    {!isCompleted && !isArchived && reminder && new Date(reminder) > new Date() && (
+                        <StyledText style={[styles.dateText, { color: '#FFD166' }]}>
+                            🔔 {new Date(reminder).toLocaleString()}
                         </StyledText>
                     )}
                 </TouchableOpacity>
@@ -149,7 +157,9 @@ const TodoItem: React.FC<TodoItemProps> = ({ id, title, isCompleted, isArchived,
                             title={title}
                             isOpen={isEditModalOpen}
                             onClose={() => setIsEditModalOpen(false)}
-                            onUpdate={(title) => editTodo(id, title)} />
+                            onUpdate={(title, reminder) => editTodo(id, title, reminder)}
+                            reminder={reminder}
+                        />
                         <TouchableOpacity onPress={onPressDelete} activeOpacity={0.7}>
                             <Ionicons name="trash-outline" size={24} color={COLORS.PRIMARY_TEXT} />
                         </TouchableOpacity>
@@ -184,6 +194,7 @@ const TodoItem: React.FC<TodoItemProps> = ({ id, title, isCompleted, isArchived,
                     createdAt={createdAt}
                     updatedAt={updatedAt}
                     completedAt={completedAt}
+                    reminder={reminder}
                 />
             </View>
         </Animated.View>

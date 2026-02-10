@@ -22,8 +22,8 @@ export default function TabsLayout() {
                 options={{ title: "Shopping" }}
             />
             <Tabs.Screen
-                name="wedding"
-                options={{ title: "Wedding" }}
+                name="events"
+                options={{ title: "Events" }}
             />
             <Tabs.Screen
                 name="movies"

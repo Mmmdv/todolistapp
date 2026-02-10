@@ -10,7 +10,7 @@ type StyledButtonProps = {
     label?: string
     icon?: React.ComponentProps<typeof Ionicons>['name']
     size?: "small" | "large"
-    variant?: "blue_icon" | "blue_button" | "delete_button"
+    variant?: "blue_icon" | "blue_button" | "delete_button" | "gray_button" | "green_button"
     disabled?: boolean
     onPress?: () => void
     style?: ViewStyle
@@ -41,6 +41,8 @@ const StyledButton: React.FC<StyledButtonProps> = ({ label, icon, size, variant,
                 variant === "blue_icon" ? styles.blue_icon : null,
                 variant === "blue_button" ? styles.blue_button : null,
                 variant === "delete_button" ? styles.delete_button : null,
+                variant === "gray_button" ? styles.gray_button : null,
+                variant === "green_button" ? styles.green_button : null,
                 style
             ]}
             onPress={handlePress}
@@ -96,6 +98,20 @@ const styles = StyleSheet.create({
     },
     delete_button: {
         backgroundColor: "#FF6B6B",
+        borderRadius: 15,
+        minWidth: 100,
+        borderWidth: 1,
+        borderColor: COLORS.PRIMARY_BORDER_DARK
+    },
+    gray_button: {
+        backgroundColor: "#666",
+        borderRadius: 15,
+        minWidth: 100,
+        borderWidth: 1,
+        borderColor: COLORS.PRIMARY_BORDER_DARK
+    },
+    green_button: {
+        backgroundColor: COLORS.CHECKBOX_SUCCESS,
         borderRadius: 15,
         minWidth: 100,
         borderWidth: 1,

@@ -44,7 +44,7 @@ export const styles = StyleSheet.create({
     sectionControls: {
         flexDirection: "row",
         alignItems: "center",
-        gap: 8,
+        gap: 10,
     },
     sectionDivider: {
         height: 0.5,

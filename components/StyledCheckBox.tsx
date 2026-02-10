@@ -21,7 +21,7 @@ const StyledCheckBox: React.FC<StyledCheckBoxProps> = ({ checked, onCheck }) => 
                 name={checked ? "checkmark-circle-sharp" : "ellipse-outline"}
                 size={25}
                 textColor="white"
-                color={checked ? COLORS.CHECKBOX_SUCCESS : COLORS.CHECKBOX_INACTIVE} />
+                color={checked ? COLORS.CHECKBOX_DARK : COLORS.CHECKBOX_INACTIVE} />
         </TouchableOpacity>
     )
 }

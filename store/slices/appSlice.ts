@@ -14,16 +14,19 @@ export enum Theme {
 export interface AppState {
     lang: Lang
     theme: Theme
+    notificationsEnabled: boolean
 }
 
 const initialState: AppState = {
     lang: Lang.AZ,
-    theme: Theme.DARK
+    theme: Theme.DARK,
+    notificationsEnabled: true
 }
 
 export interface UpdateAppSettingsPayload {
     lang?: Lang
     theme?: Theme
+    notificationsEnabled?: boolean
 }
 
 export const appSlice = createSlice({
@@ -34,9 +37,10 @@ export const appSlice = createSlice({
             state: AppState,
             action: PayloadAction<UpdateAppSettingsPayload>
         ) => {
-            const { lang, theme } = action.payload;
+            const { lang, theme, notificationsEnabled } = action.payload;
             if (lang) state.lang = lang
             if (theme) state.theme = theme
+            if (notificationsEnabled !== undefined) state.notificationsEnabled = notificationsEnabled
         },
     },
 })

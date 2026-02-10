@@ -16,6 +16,7 @@ type ViewTodoModalProps = {
     createdAt: Todo["createdAt"]
     updatedAt?: Todo["updatedAt"]
     completedAt?: Todo["completedAt"]
+    reminder?: string
 };
 
 const ViewTodoModal: React.FC<ViewTodoModalProps> = ({
@@ -25,6 +26,7 @@ const ViewTodoModal: React.FC<ViewTodoModalProps> = ({
     createdAt,
     updatedAt,
     completedAt,
+    reminder
 }) => {
     const { t } = useTheme();
 
@@ -59,11 +61,19 @@ const ViewTodoModal: React.FC<ViewTodoModalProps> = ({
                         </View>
                     )}
 
-                    {completedAt && (
+                    <View style={localStyles.detailRow}>
+                        <StyledText style={localStyles.label}>✅ {t("completed")}</StyledText>
+                        <StyledText style={[localStyles.value, { color: '#4ECDC4' }]}>
+                            {formatDate(completedAt)}
+                        </StyledText>
+                    </View>
+                    )}
+
+                    {reminder && (
                         <View style={localStyles.detailRow}>
-                            <StyledText style={localStyles.label}>✅ {t("completed")}</StyledText>
-                            <StyledText style={[localStyles.value, { color: '#4ECDC4' }]}>
-                                {formatDate(completedAt)}
+                            <StyledText style={localStyles.label}>🔔 {t("reminder")}</StyledText>
+                            <StyledText style={[localStyles.value, { color: '#FFD166' }]}>
+                                {new Date(reminder).toLocaleString()}
                             </StyledText>
                         </View>
                     )}

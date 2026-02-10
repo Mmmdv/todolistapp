@@ -25,8 +25,8 @@ const useTodo = () => {
         dispatch(deleteTodo(id))
     }
 
-    const onEditTodo = (id: Todo["id"], title: Todo["title"]) => {
-        dispatch(editTodo({ id, title }))
+    const onEditTodo = (id: Todo["id"], title: Todo["title"], reminder?: string) => {
+        dispatch(editTodo({ id, title, reminder }))
     }
 
     const onCheckTodo = (id: Todo["id"]) => {
