@@ -1,8 +1,13 @@
+import StyledButton from "@/components/StyledButton";
+import StyledModal from "@/components/StyledModal";
 import StyledText from "@/components/StyledText";
+import { modalStyles } from "@/constants/modalStyles";
 import { useTheme } from "@/hooks/useTheme";
 import ResetAppModal from "@/layout/Modals/ResetAppModal";
-import { useAppDispatch } from "@/store";
+import { useAppDispatch, useAppSelector } from "@/store";
 import { Lang, Theme, updateAppSetting } from "@/store/slices/appSlice";
+import { cancelAllNotifications } from "@/store/slices/notificationSlice";
+import { cancelAllReminders, selectTodos } from "@/store/slices/todoSlice";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Constants from "expo-constants";
@@ -19,6 +24,7 @@ interface SettingsModalProps {
 const SettingsModal: React.FC<SettingsModalProps> = ({ visible, onClose }) => {
     const { colors, t, lang, theme, notificationsEnabled } = useTheme();
     const dispatch = useAppDispatch();
+    const todos = useAppSelector(selectTodos);
 
     const [isLoadingNotifications, setIsLoadingNotifications] = React.useState(false);
 
@@ -53,10 +59,12 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ visible, onClose }) => {
 
             if (status === 'granted') {
                 dispatch(updateAppSetting({ notificationsEnabled: true }));
+                // NO rescheduling here - user must manually edit/reset reminders
             } else {
                 const { status: newStatus } = await Notifications.requestPermissionsAsync();
                 if (newStatus === 'granted') {
                     dispatch(updateAppSetting({ notificationsEnabled: true }));
+                    // NO rescheduling here either
                 } else {
                     // Permission denied
                     dispatch(updateAppSetting({ notificationsEnabled: false }));
@@ -65,10 +73,35 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ visible, onClose }) => {
             }
             setIsLoadingNotifications(false);
         } else {
-            // User disabling - just update store
-            dispatch(updateAppSetting({ notificationsEnabled: false }));
+            // User disabling - Check for pending notifications
+            const hasActiveReminders = todos.some(todo =>
+                !todo.isCompleted &&
+                !todo.isArchived &&
+                todo.reminder &&
+                new Date(todo.reminder) > new Date() &&
+                !todo.reminderCancelled
+            );
+
+            if (hasActiveReminders) {
+                setIsConfirmDisableOpen(true);
+            } else {
+                confirmDisableNotifications();
+            }
         }
     };
+
+    const confirmDisableNotifications = async () => {
+        dispatch(updateAppSetting({ notificationsEnabled: false }));
+        // Cancel all local scheduled notifications
+        await Notifications.cancelAllScheduledNotificationsAsync();
+        // Update store status
+        dispatch(cancelAllNotifications());
+        // Mark all reminders as cancelled in Todo list
+        dispatch(cancelAllReminders());
+        setIsConfirmDisableOpen(false);
+    };
+
+    const [isConfirmDisableOpen, setIsConfirmDisableOpen] = React.useState(false);
 
     const handleRateUs = () => {
         const storeUrl = Platform.OS === 'ios'
@@ -294,6 +327,43 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ visible, onClose }) => {
                 onClose={() => setIsResetModalOpen(false)}
                 onReset={onConfirmReset}
             />
+
+            {/* Notification Disable Confirmation Modal */}
+            <StyledModal isOpen={isConfirmDisableOpen} onClose={() => setIsConfirmDisableOpen(false)}>
+                <View style={modalStyles.modalContainer}>
+                    <View style={[modalStyles.iconContainer, {
+                        backgroundColor: colors.SECONDARY_BACKGROUND,
+                        shadowColor: "#FF6B6B",
+                        shadowOffset: { width: 0, height: 4 },
+                        shadowOpacity: 0.3,
+                        shadowRadius: 8,
+                        elevation: 5
+                    }]}>
+                        <Ionicons name="notifications-off" size={28} color={colors.ERROR_INPUT_TEXT} />
+                    </View>
+
+                    <StyledText style={modalStyles.headerText}>{t("notifications")}</StyledText>
+
+                    <View style={modalStyles.divider} />
+
+                    <StyledText style={modalStyles.messageText}>
+                        {t("confirm_delete_message")}
+                    </StyledText>
+
+                    <View style={modalStyles.buttonsContainer}>
+                        <StyledButton
+                            label={t("cancel")}
+                            onPress={() => setIsConfirmDisableOpen(false)}
+                            variant="dark_button"
+                        />
+                        <StyledButton
+                            label={t("delete")}
+                            onPress={confirmDisableNotifications}
+                            variant="dark_button"
+                        />
+                    </View>
+                </View>
+            </StyledModal>
         </Modal>
     );
 };

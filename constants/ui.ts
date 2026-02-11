@@ -15,7 +15,7 @@ export const DarkTheme = {
   CHECKBOX_SUCCESS_ACTIVE: "#e5e8ecff",
   CHECKBOX_INACTIVE: "#e8e9ebff",
   PLACEHOLDER: "#cacdd39a",
-  ERROR_INPUT_TEXT: "#f55212ff",
+  ERROR_INPUT_TEXT: "#d16b43ff",
 };
 
 export const LightTheme = {

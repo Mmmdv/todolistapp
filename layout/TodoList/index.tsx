@@ -175,6 +175,7 @@ const TodoList: React.FC<TodoListProps> = ({ todos, onDeleteTodo, onCheckTodo, o
                         checkTodo={onCheckTodo}
                         editTodo={onEditTodo}
                         reminder={item.reminder}
+                        reminderCancelled={item.reminderCancelled}
                     />
                 ))}
             </View>

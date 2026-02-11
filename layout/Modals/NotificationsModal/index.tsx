@@ -44,9 +44,27 @@ const NotificationsModal: React.FC<NotificationsModalProps> = ({ visible, onClos
 
     const renderItem = ({ item }: { item: any }) => {
         const isPending = new Date(item.date) > new Date();
-        const statusColor = isPending ? "#FFB74D" : colors.CHECKBOX_SUCCESS; // Orange for pending, Teal for sent
-        const statusIcon = isPending ? "time-outline" : "notifications";
+        // Determine status style
+        let statusColor = colors.CHECKBOX_SUCCESS;
+        let statusIcon: any = "notifications";
+        let statusBg = "rgba(78, 205, 196, 0.15)";
+        let opacity = 1;
+
+        if (item.status === 'cancelled') {
+            statusColor = colors.ERROR_INPUT_TEXT;
+            statusIcon = "notifications-off";
+            statusBg = "rgba(255, 69, 58, 0.1)";
+            opacity = 0.6;
+        } else if (isPending) {
+            statusColor = "#FFB74D";
+            statusIcon = "time-outline";
+            statusBg = "rgba(255, 183, 77, 0.15)";
+        }
+
         const isUnread = !item.read;
+
+        // Clean body text (remove "Title: " or "Başlıq: " etc)
+        const cleanBody = item.body.replace(/^(Title|Başlıq|Заголовок): /i, "");
 
         return (
             <TouchableOpacity
@@ -61,11 +79,21 @@ const NotificationsModal: React.FC<NotificationsModalProps> = ({ visible, onClos
                     {
                         backgroundColor: colors.SECONDARY_BACKGROUND,
                         borderColor: colors.PRIMARY_BORDER_DARK,
-                        opacity: isUnread ? 1 : 0.6
+                        opacity: isUnread ? 1 : 0.8
                     }
                 ]}
             >
-                <View style={[styles.iconContainer, { backgroundColor: isPending ? "rgba(255, 183, 77, 0.15)" : "rgba(78, 205, 196, 0.15)" }]}>
+                <View style={[
+                    styles.iconContainer,
+                    {
+                        backgroundColor: statusBg,
+                        shadowColor: statusColor,
+                        shadowOffset: { width: 0, height: 4 },
+                        shadowOpacity: 0.5,
+                        shadowRadius: 8,
+                        elevation: 8
+                    }
+                ]}>
                     <Ionicons name={statusIcon} size={20} color={statusColor} />
                 </View>
                 <View style={styles.contentContainer}>
@@ -74,17 +102,27 @@ const NotificationsModal: React.FC<NotificationsModalProps> = ({ visible, onClos
                             styles.itemTitle,
                             {
                                 color: colors.PRIMARY_TEXT,
-                                fontWeight: isUnread ? "700" : "400"
+                                fontWeight: isUnread ? "700" : "600",
+                                fontSize: 16
                             }
-                        ]}>{item.title}</StyledText>
-                        <StyledText style={styles.itemDate}>
-                            {new Date(item.date).toLocaleDateString()} {new Date(item.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                        </StyledText>
+                        ]}>{cleanBody}</StyledText>
                     </View>
-                    <StyledText style={[styles.itemBody, { color: colors.PLACEHOLDER }]}>{item.body}</StyledText>
-                    {isPending && (
+                    <StyledText style={styles.itemDate}>
+                        {new Date(item.date).toLocaleDateString()} {new Date(item.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </StyledText>
+                    {item.status === 'cancelled' && (
+                        <View style={{ marginTop: 4 }}>
+                            <StyledText style={{ fontSize: 12, color: colors.ERROR_INPUT_TEXT, fontWeight: "600" }}>{t("canceled")}</StyledText>
+                        </View>
+                    )}
+                    {item.status !== 'cancelled' && isPending && (
                         <View style={{ marginTop: 4 }}>
                             <StyledText style={{ fontSize: 12, color: "#FFB74D", fontWeight: "600" }}>{t("pending")}</StyledText>
+                        </View>
+                    )}
+                    {item.status !== 'cancelled' && !isPending && (
+                        <View style={{ marginTop: 4 }}>
+                            <StyledText style={{ fontSize: 12, color: colors.CHECKBOX_SUCCESS, fontWeight: "600" }}>{t("sent")}</StyledText>
                         </View>
                     )}
                 </View>
@@ -155,15 +193,22 @@ const NotificationsModal: React.FC<NotificationsModalProps> = ({ visible, onClos
                 {/* Custom Delete Confirmation Modal */}
                 <StyledModal isOpen={isDeleteConfirmOpen} onClose={() => setIsDeleteConfirmOpen(false)}>
                     <View style={modalStyles.modalContainer}>
-                        <View style={[modalStyles.iconContainer, { backgroundColor: "rgba(255, 107, 107, 0.15)" }]}>
+                        <View style={[modalStyles.iconContainer, {
+                            backgroundColor: colors.SECONDARY_BACKGROUND,
+                            shadowColor: "#FF6B6B",
+                            shadowOffset: { width: 0, height: 4 },
+                            shadowOpacity: 0.3,
+                            shadowRadius: 8,
+                            elevation: 5
+                        }]}>
                             <Ionicons name="trash-outline" size={28} color="#FF6B6B" />
                         </View>
                         <StyledText style={modalStyles.headerText}>{t("confirm_delete")}</StyledText>
                         <View style={modalStyles.divider} />
                         <StyledText style={modalStyles.messageText}>{t("confirm_delete_message")}</StyledText>
                         <View style={modalStyles.buttonsContainer}>
-                            <StyledButton label={t("cancel")} onPress={() => setIsDeleteConfirmOpen(false)} variant="blue_button" />
-                            <StyledButton label={t("delete")} onPress={confirmClearAll} variant="blue_button" />
+                            <StyledButton label={t("cancel")} onPress={() => setIsDeleteConfirmOpen(false)} variant="dark_button" />
+                            <StyledButton label={t("delete")} onPress={confirmClearAll} variant="dark_button" />
                         </View>
                     </View>
                 </StyledModal>

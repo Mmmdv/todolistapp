@@ -7,11 +7,12 @@ import { useTheme } from "@/hooks/useTheme";
 import { Ionicons } from "@expo/vector-icons";
 import DateTimePicker from '@react-native-community/datetimepicker';
 import * as Haptics from "expo-haptics";
-import { useEffect, useState } from "react";
-import { Platform, StyleSheet, TextInput, TouchableOpacity, View } from "react-native";
+import { useEffect, useRef, useState } from "react";
+import { Animated, Keyboard, Platform, Pressable, StyleSheet, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from "react-native";
 
 import { schedulePushNotification } from "@/constants/notifications";
 import { useAppDispatch } from "@/store";
+import { updateAppSetting } from "@/store/slices/appSlice";
 import { addNotification } from "@/store/slices/notificationSlice";
 
 type AddTodoModalProps = {
@@ -37,6 +38,18 @@ const AddTodoModal: React.FC<AddTodoModalProps> = ({
     const [showTimePicker, setShowTimePicker] = useState(false)
     const [tempDate, setTempDate] = useState<Date | undefined>(undefined) // For iOS intermediate state
 
+    const inputRef = useRef<TextInput>(null);
+    const scaleAnim = useRef(new Animated.Value(1)).current;
+
+    useEffect(() => {
+        Animated.spring(scaleAnim, {
+            toValue: isFocused ? 1.1 : 1,
+            useNativeDriver: false, // Required for layout animation (minHeight)
+            friction: 8,
+            tension: 40
+        }).start();
+    }, [isFocused]);
+
     useEffect(() => {
         if (inputError && title) setInputError(false)
     }, [title])
@@ -45,7 +58,7 @@ const AddTodoModal: React.FC<AddTodoModalProps> = ({
         if (isOpen) {
             setTitle("")
             setInputError(false)
-            setIsFocused(true)
+            setIsFocused(false)
             setReminderDate(undefined)
         }
     }, [isOpen])
@@ -77,6 +90,15 @@ const AddTodoModal: React.FC<AddTodoModalProps> = ({
 
     const startReminderFlow = () => {
         Haptics.selectionAsync();
+
+        if (!notificationsEnabled) {
+            setShowPermissionModal(true);
+            return;
+        }
+        proceedWithReminder();
+    }
+
+    const proceedWithReminder = () => {
         if (Platform.OS === 'ios') {
             setTempDate(new Date());
         }
@@ -107,7 +129,7 @@ const AddTodoModal: React.FC<AddTodoModalProps> = ({
                 // Auto-trigger time picker on Android
                 setTimeout(() => {
                     setShowTimePicker(true);
-                }, 100);
+                }, 0);
             } else {
                 // iOS: Update temp state only
                 setTempDate(selectedDate);
@@ -128,11 +150,26 @@ const AddTodoModal: React.FC<AddTodoModalProps> = ({
             newDate.setHours(reminderDate.getHours());
             newDate.setMinutes(reminderDate.getMinutes());
         }
-        setReminderDate(newDate);
+
+        // Validate Day
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const checkDate = new Date(newDate);
+        checkDate.setHours(0, 0, 0, 0);
+
+        if (checkDate < today) {
+            setTimeout(() => {
+                setShowPastDateAlert(true);
+            }, 100);
+            return;
+        }
+
+        // removed setReminderDate(newDate) - wait for time confirmation
+        setTempDate(newDate); // Pass to time picker via temp state
         setShowDatePicker(false);
         setTimeout(() => {
             setShowTimePicker(true);
-        }, 300);
+        }, 350); // Small delay for smooth transition
     };
 
     const onChangeTime = (event: any, selectedTime?: Date) => {
@@ -149,6 +186,15 @@ const AddTodoModal: React.FC<AddTodoModalProps> = ({
 
                 newDate.setHours(selectedTime.getHours());
                 newDate.setMinutes(selectedTime.getMinutes());
+
+                if (newDate < new Date()) {
+                    setShowTimePicker(false); // Close picker first
+                    // Slight delay to ensure picker is gone/closed
+                    setTimeout(() => {
+                        setShowPastDateAlert(true);
+                    }, 100);
+                    return;
+                }
 
                 setReminderDate(newDate);
 
@@ -173,11 +219,18 @@ const AddTodoModal: React.FC<AddTodoModalProps> = ({
 
     const confirmTimeIOS = () => {
         const finalDate = tempDate || reminderDate || new Date();
-        setReminderDate(finalDate);
+
+        if (finalDate < new Date()) {
+            setShowTimePicker(false);
+            setTimeout(() => {
+                setShowPastDateAlert(true);
+            }, 100);
+            return;
+        }
+
+        setReminderDate(finalDate); // Validate and Save
         setShowTimePicker(false);
-        setTimeout(() => {
-            onPressAdd(finalDate);
-        }, 300);
+        // Note: Auto-save onPressAdd not needed here, user still needs to click Add Task
     };
 
     // Locale helper
@@ -199,173 +252,290 @@ const AddTodoModal: React.FC<AddTodoModalProps> = ({
         });
     }
 
+    // Permission Modal state
+    const [showPermissionModal, setShowPermissionModal] = useState(false);
+    const [showPastDateAlert, setShowPastDateAlert] = useState(false);
+
     return (
         <StyledModal isOpen={isOpen} onClose={onClose}>
-            <View style={modalStyles.modalContainer}>
-                <View style={[modalStyles.iconContainer, {
-                    backgroundColor: COLORS.SECONDARY_BACKGROUND,
-                    shadowColor: COLORS.CHECKBOX_SUCCESS,
-                    shadowOffset: { width: 0, height: 4 },
-                    shadowOpacity: 0.3,
-                    shadowRadius: 8,
-                    elevation: 5
-                }]}>
-                    <Ionicons name="add" size={28} color={COLORS.CHECKBOX_SUCCESS} />
-                </View>
+            <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+                <View style={modalStyles.modalContainer}>
+                    <View style={[modalStyles.iconContainer, {
+                        backgroundColor: COLORS.SECONDARY_BACKGROUND,
+                        shadowColor: COLORS.CHECKBOX_SUCCESS,
+                        shadowOffset: { width: 0, height: 4 },
+                        shadowOpacity: 0.3,
+                        shadowRadius: 8,
+                        elevation: 5
+                    }]}>
+                        <Ionicons name="add" size={28} color={COLORS.CHECKBOX_SUCCESS} />
+                    </View>
 
-                <StyledText style={modalStyles.headerText}>{t("add")}</StyledText>
+                    <StyledText style={modalStyles.headerText}>{t("add")}</StyledText>
 
-                <View style={modalStyles.divider} />
+                    <View style={modalStyles.divider} />
 
-                <View style={[
-                    localStyles.inputWrapper,
-                    isFocused && localStyles.inputFocused,
-                    inputError && localStyles.inputError
-                ]}>
-                    <TextInput
-                        style={localStyles.textInput}
-                        placeholder={t("todo_placeholder")}
-                        placeholderTextColor="#666"
-                        value={title}
-                        onChangeText={setTitle}
-                        onFocus={() => setIsFocused(true)}
-                        onBlur={() => setIsFocused(false)}
-                        multiline={true}
-                        autoFocus={true}
-                    />
-                </View>
+                    <Pressable onPress={() => inputRef.current?.focus()} style={{ width: '100%', alignItems: 'center', zIndex: 10 }}>
+                        <Animated.View style={[
+                            localStyles.inputWrapper,
+                            isFocused && localStyles.inputFocused,
+                            inputError && localStyles.inputError,
+                            {
+                                minHeight: scaleAnim.interpolate({
+                                    inputRange: [1, 1.1],
+                                    outputRange: [60, 120]
+                                }),
+                                marginTop: scaleAnim.interpolate({
+                                    inputRange: [1, 1.1],
+                                    outputRange: [0, 5]
+                                }),
+                                marginBottom: scaleAnim.interpolate({
+                                    inputRange: [1, 1.1],
+                                    outputRange: [12, 15]
+                                }),
+                                transform: [{ scale: scaleAnim }]
+                            }
+                        ]}>
+                            <TextInput
+                                ref={inputRef}
+                                style={[localStyles.textInput, { fontSize: title ? 16 : 12 }]}
+                                placeholder={t("todo_placeholder")}
+                                placeholderTextColor="#666"
+                                value={title}
+                                onChangeText={setTitle}
+                                onFocus={() => setIsFocused(true)}
+                                onBlur={() => setIsFocused(false)}
+                                multiline={true}
+                            />
+                        </Animated.View>
+                    </Pressable>
 
-                {/* Simplified Reminder Section */}
-                <View style={{ marginBottom: 20 }}>
-                    {!reminderDate ? (
-                        <TouchableOpacity
-                            style={localStyles.addReminderButton}
-                            onPress={startReminderFlow}
-                            activeOpacity={0.7}
-                        >
-                            <Ionicons name="notifications-outline" size={20} color="#888" />
-                            <StyledText style={localStyles.addReminderText}>{t("reminder")}</StyledText>
-                            <Ionicons name="add-circle" size={20} color={COLORS.CHECKBOX_SUCCESS} style={{ marginLeft: 'auto' }} />
-                        </TouchableOpacity>
-                    ) : (
-                        <View style={localStyles.reminderChip}>
-                            <View style={localStyles.chipContent}>
-                                <Ionicons name="calendar" size={18} color="#fff" />
-                                <StyledText style={localStyles.chipText}>
-                                    {formatFullDate(reminderDate)}
-                                </StyledText>
-                            </View>
+                    {/* Simplified Reminder Section */}
+                    <View style={{ marginBottom: 10 }}>
+                        {!reminderDate ? (
                             <TouchableOpacity
-                                onPress={() => setReminderDate(undefined)}
-                                style={localStyles.clearButton}
+                                style={localStyles.addReminderButton}
+                                onPress={startReminderFlow}
+                                activeOpacity={0.7}
                             >
-                                <Ionicons name="close-circle" size={20} color="#fff" style={{ opacity: 0.8 }} />
+                                <Ionicons name="notifications-outline" size={20} color="#888" />
+                                <StyledText style={localStyles.addReminderText}>{t("reminder")}</StyledText>
+                                <Ionicons name="add-circle" size={20} color={COLORS.CHECKBOX_SUCCESS} style={{ marginLeft: 'auto' }} />
                             </TouchableOpacity>
-                        </View>
+                        ) : (
+                            <View style={localStyles.reminderChip}>
+                                <TouchableOpacity
+                                    style={localStyles.chipContent}
+                                    onPress={startReminderFlow}
+                                    activeOpacity={0.7}
+                                >
+                                    <Ionicons name="calendar" size={18} color="#fff" />
+                                    <StyledText style={localStyles.chipText}>
+                                        {formatFullDate(reminderDate)}
+                                    </StyledText>
+                                </TouchableOpacity>
+                                <TouchableOpacity
+                                    onPress={() => setReminderDate(undefined)}
+                                    style={localStyles.clearButton}
+                                >
+                                    <Ionicons name="close-circle" size={20} color="#fff" style={{ opacity: 0.8 }} />
+                                </TouchableOpacity>
+                            </View>
+                        )}
+                    </View>
+
+                    {/* Android Pickers */}
+                    {Platform.OS === 'android' && showDatePicker && (
+                        <DateTimePicker
+                            value={reminderDate || new Date()}
+                            mode="date"
+                            display="default"
+                            onChange={onChangeDate}
+                            minimumDate={new Date()}
+                            locale={getLocale()}
+                        />
                     )}
-                </View>
 
-                {/* Android Pickers */}
-                {Platform.OS === 'android' && showDatePicker && (
-                    <DateTimePicker
-                        value={reminderDate || new Date()}
-                        mode="date"
-                        display="default"
-                        onChange={onChangeDate}
-                        minimumDate={new Date()}
-                        locale={getLocale()}
-                    />
-                )}
+                    {Platform.OS === 'android' && showTimePicker && (
+                        <DateTimePicker
+                            value={reminderDate || new Date()}
+                            mode="time"
+                            display="default"
+                            onChange={onChangeTime}
+                            locale={getLocale()}
+                            is24Hour={true}
+                        />
+                    )}
 
-                {Platform.OS === 'android' && showTimePicker && (
-                    <DateTimePicker
-                        value={reminderDate || new Date()}
-                        mode="time"
-                        display="default"
-                        onChange={onChangeTime}
-                        locale={getLocale()}
-                        is24Hour={true}
-                    />
-                )}
+                    {/* iOS Pickers Wrapper */}
+                    {Platform.OS === 'ios' && (
+                        <StyledModal
+                            isOpen={showDatePicker || showTimePicker}
+                            onClose={() => {
+                                setShowDatePicker(false);
+                                setShowTimePicker(false);
+                            }}
+                        >
+                            <View style={modalStyles.modalContainer}>
+                                <View style={[modalStyles.iconContainer, {
+                                    backgroundColor: COLORS.SECONDARY_BACKGROUND,
+                                    shadowColor: showDatePicker ? "#5BC0EB" : "#FFD166",
+                                    shadowOffset: { width: 0, height: 4 },
+                                    shadowOpacity: 0.3,
+                                    shadowRadius: 8,
+                                    elevation: 5
+                                }]}>
+                                    <Ionicons
+                                        name={showDatePicker ? "calendar" : "time"}
+                                        size={28}
+                                        color={showDatePicker ? "#5BC0EB" : "#FFD166"}
+                                    />
+                                </View>
 
-                {/* iOS Pickers Wrapper */}
-                {Platform.OS === 'ios' && (
-                    <StyledModal
-                        isOpen={showDatePicker || showTimePicker}
-                        onClose={() => {
-                            setShowDatePicker(false);
-                            setShowTimePicker(false);
-                        }}
-                    >
-                        <View style={localStyles.iosPickerContainer}>
-                            <View style={localStyles.iosHeader}>
-                                <StyledText style={localStyles.iosTitle}>
+                                <StyledText style={modalStyles.headerText}>
                                     {showDatePicker ? t("date") : t("time")}
                                 </StyledText>
-                            </View>
-                            <View style={localStyles.pickerWrapper}>
-                                <DateTimePicker
-                                    value={tempDate || reminderDate || new Date()}
-                                    mode={showDatePicker ? "date" : "time"}
-                                    display="spinner"
-                                    onChange={showDatePicker ? onChangeDate : onChangeTime}
-                                    minimumDate={showDatePicker ? new Date() : undefined}
-                                    locale={getLocale()}
-                                    textColor={COLORS.PRIMARY_TEXT}
-                                    themeVariant={useTheme().theme} // 'dark' or 'light'
-                                />
-                            </View>
-                            <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 20, paddingBottom: 10, paddingTop: 10 }}>
-                                <TouchableOpacity
-                                    onPress={() => { setShowDatePicker(false); setShowTimePicker(false); }}
-                                    style={localStyles.iconButton}
-                                >
-                                    <Ionicons name="close-circle" size={36} color={COLORS.ERROR_INPUT_TEXT} />
-                                </TouchableOpacity>
 
-                                <TouchableOpacity
-                                    onPress={showDatePicker ? confirmDateIOS : confirmTimeIOS}
-                                    style={localStyles.iconButton}
-                                >
-                                    <Ionicons
-                                        name={showDatePicker ? "arrow-forward-circle" : "checkmark-circle"}
-                                        size={36}
-                                        color={COLORS.CHECKBOX_SUCCESS}
+                                <View style={modalStyles.divider} />
+
+                                <View style={{ width: '100%', height: 150, justifyContent: 'center', alignItems: 'center', overflow: 'hidden' }}>
+                                    <DateTimePicker
+                                        value={tempDate || reminderDate || new Date()}
+                                        mode={showDatePicker ? "date" : "time"}
+                                        display="spinner"
+                                        onChange={showDatePicker ? onChangeDate : onChangeTime}
+                                        minimumDate={showDatePicker ? new Date() : undefined}
+                                        locale={getLocale()}
+                                        textColor={COLORS.PRIMARY_TEXT}
+                                        themeVariant={useTheme().theme}
+                                        style={{ width: '100%', transform: [{ scale: 0.85 }] }}
                                     />
-                                </TouchableOpacity>
+                                </View>
+
+                                <View style={[modalStyles.buttonsContainer, { marginTop: 20 }]}>
+                                    <StyledButton
+                                        label={t("cancel")}
+                                        onPress={() => { setShowDatePicker(false); setShowTimePicker(false); }}
+                                        variant="dark_button"
+                                        style={{ flex: 1 }}
+                                    />
+                                    <StyledButton
+                                        label={showDatePicker ? t("next") : t("save")}
+                                        onPress={showDatePicker ? confirmDateIOS : confirmTimeIOS}
+                                        variant="dark_button"
+                                        style={{ flex: 1 }}
+                                    />
+                                </View>
+                            </View>
+                        </StyledModal>
+                    )}
+
+                    <View style={modalStyles.buttonsContainer}>
+                        <StyledButton
+                            label={t("cancel")}
+                            onPress={onClose}
+                            variant="dark_button"
+                        />
+                        <StyledButton
+                            label={t("add")}
+                            onPress={() => onPressAdd()}
+                            variant="dark_button"
+                        />
+                    </View>
+
+                    {/* Permission Modal */}
+                    <StyledModal isOpen={showPermissionModal} onClose={() => setShowPermissionModal(false)}>
+                        <View style={modalStyles.modalContainer}>
+                            <View style={[modalStyles.iconContainer, {
+                                backgroundColor: COLORS.SECONDARY_BACKGROUND,
+                                shadowColor: "#FFD166",
+                                shadowOffset: { width: 0, height: 4 },
+                                shadowOpacity: 0.3,
+                                shadowRadius: 8,
+                                elevation: 5
+                            }]}>
+                                <Ionicons name="notifications" size={28} color="#FFD166" />
+                            </View>
+
+                            <StyledText style={modalStyles.headerText}>{t("enable_notifications")}</StyledText>
+
+                            <View style={modalStyles.divider} />
+
+                            <StyledText style={modalStyles.messageText}>
+                                {t("enable_notifications_desc")}
+                            </StyledText>
+
+                            <View style={modalStyles.buttonsContainer}>
+                                <StyledButton
+                                    label={t("cancel")}
+                                    onPress={() => setShowPermissionModal(false)}
+                                    variant="dark_button"
+                                />
+                                <StyledButton
+                                    label={t("enable")}
+                                    onPress={() => {
+                                        dispatch(updateAppSetting({ notificationsEnabled: true }));
+                                        setShowPermissionModal(false);
+                                        // Slight delay to allow modal close animation before opening picker
+                                        setTimeout(() => {
+                                            proceedWithReminder();
+                                        }, 300);
+                                    }}
+                                    variant="dark_button"
+                                />
                             </View>
                         </View>
                     </StyledModal>
-                )}
 
-                <View style={modalStyles.buttonsContainer}>
-                    <StyledButton
-                        label={t("cancel")}
-                        onPress={onClose}
-                        variant="blue_button"
-                    />
-                    <StyledButton
-                        label={t("add")}
-                        onPress={() => onPressAdd()}
-                        variant="blue_button"
-                    />
+                    {/* Past Date Alert Modal */}
+                    <StyledModal isOpen={showPastDateAlert} onClose={() => setShowPastDateAlert(false)}>
+                        <View style={modalStyles.modalContainer}>
+                            <View style={[modalStyles.iconContainer, {
+                                backgroundColor: COLORS.SECONDARY_BACKGROUND,
+                                shadowColor: "#FFB74D",
+                                shadowOffset: { width: 0, height: 4 },
+                                shadowOpacity: 0.3,
+                                shadowRadius: 8,
+                                elevation: 5
+                            }]}>
+                                <Ionicons name="alert-circle" size={28} color="#FFB74D" />
+                            </View>
+
+                            <StyledText style={modalStyles.headerText}>{t("attention")}</StyledText>
+
+                            <View style={modalStyles.divider} />
+
+                            <StyledText style={modalStyles.messageText}>
+                                {t("past_reminder_error")}
+                            </StyledText>
+
+                            <View style={modalStyles.buttonsContainer}>
+                                <StyledButton
+                                    label={t("close")}
+                                    onPress={() => setShowPastDateAlert(false)}
+                                    variant="dark_button"
+                                />
+                            </View>
+                        </View>
+                    </StyledModal>
+
                 </View>
-            </View>
+            </TouchableWithoutFeedback>
         </StyledModal>
     )
 }
 
 const localStyles = StyleSheet.create({
     inputWrapper: {
-        backgroundColor: "rgba(255, 255, 255, 0.05)", // Lighter transparency
-        borderRadius: 16, // Softer corners
+        backgroundColor: "rgba(255, 255, 255, 0.05)",
+        borderRadius: 16,
         borderWidth: 1,
-        borderColor: "rgba(255, 255, 255, 0.1)", // Subtle border
+        borderColor: "rgba(255, 255, 255, 0.1)",
         paddingHorizontal: 16,
         paddingVertical: 12,
         minHeight: 60,
         width: "100%",
-        marginBottom: 20,
+        // marginBottom removed, handled by animation
     },
     inputFocused: {
         backgroundColor: "rgba(255, 255, 255, 0.05)",
@@ -382,11 +552,12 @@ const localStyles = StyleSheet.create({
     },
     textInput: {
         color: COLORS.PRIMARY_TEXT,
-        fontSize: 18,
+        fontSize: 16,
         minHeight: 40,
-        textAlign: 'left', // Horizontal: Left
-        textAlignVertical: 'center', // Vertical: Center
-        paddingHorizontal: 8, // Padding requested
+        textAlign: 'left',
+        textAlignVertical: 'center',
+        paddingHorizontal: 8,
+        lineHeight: 16, // Reduced line spacing
     },
     addReminderButton: {
         flexDirection: 'row',
@@ -407,7 +578,7 @@ const localStyles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: COLORS.CHECKBOX_SUCCESS,
+        backgroundColor: "#5BC0EB", // Changed from CHECKBOX_SUCCESS (turquoise) to Sky Blue
         borderRadius: 12,
         paddingVertical: 12,
         paddingHorizontal: 40, // Increased to account for absolute button
@@ -419,7 +590,7 @@ const localStyles = StyleSheet.create({
         gap: 8,
     },
     chipText: {
-        color: "#fff",
+        color: "#000", // Darker text as requested
         fontSize: 15,
         fontWeight: "600",
         textAlign: 'center',
@@ -456,8 +627,13 @@ const localStyles = StyleSheet.create({
     },
     pickerWrapper: {
         marginTop: 10,
+        width: '100%',
+        height: 150,
         justifyContent: 'center',
-        alignItems: 'center',
+        overflow: 'hidden',
+        borderTopWidth: 1,
+        borderBottomWidth: 1,
+        borderColor: 'rgba(255, 255, 255, 0.1)', // Thin separator lines
     }
 })
 

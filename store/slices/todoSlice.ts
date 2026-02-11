@@ -38,7 +38,14 @@ export const todoSlice = createSlice({
         ) => {
             const { id, title, reminder } = action.payload;
             state.todos = state.todos.map((todo) =>
-                todo.id === id ? { ...todo, title, reminder, updatedAt: new Date().toISOString() } : todo)
+                todo.id === id ? {
+                    ...todo,
+                    title,
+                    reminder,
+                    updatedAt: new Date().toISOString(),
+                    // If reminder is updated/set, reset cancelled status
+                    reminderCancelled: reminder ? false : todo.reminderCancelled
+                } : todo)
         },
         checkTodo: (
             state: TodoState,
@@ -79,10 +86,18 @@ export const todoSlice = createSlice({
         ) => {
             state.todos = state.todos.filter((todo) => !todo.isArchived)
         },
+        cancelAllReminders: (state) => {
+            state.todos = state.todos.map(todo => {
+                if (todo.reminder && !todo.isCompleted && !todo.isArchived) {
+                    return { ...todo, reminderCancelled: true };
+                }
+                return todo;
+            });
+        }
     },
 });
 
-export const { addTodo, deleteTodo, editTodo, checkTodo, archiveTodo, archiveAllTodos, clearArchive } = todoSlice.actions
+export const { addTodo, deleteTodo, editTodo, checkTodo, archiveTodo, archiveAllTodos, clearArchive, cancelAllReminders } = todoSlice.actions
 
 export const selectTodos = (state: { todo: TodoState }): TodoState['todos'] =>
     state.todo.todos

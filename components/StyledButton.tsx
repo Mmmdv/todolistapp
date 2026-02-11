@@ -10,15 +10,16 @@ type StyledButtonProps = {
     label?: string
     icon?: React.ComponentProps<typeof Ionicons>['name']
     size?: "small" | "large"
-    variant?: "blue_icon" | "blue_button" | "delete_button" | "gray_button" | "green_button"
+    variant?: "blue_icon" | "blue_button" | "delete_button" | "gray_button" | "dark_button"
     disabled?: boolean
     onPress?: () => void
     style?: ViewStyle
     activeOpacity?: number
     vibrate?: boolean
+    shadowColor?: string
 }
 
-const StyledButton: React.FC<StyledButtonProps> = ({ label, icon, size, variant, disabled, onPress, style, activeOpacity, vibrate }) => {
+const StyledButton: React.FC<StyledButtonProps> = ({ label, icon, size, variant, disabled, onPress, style, activeOpacity, vibrate, shadowColor }) => {
 
     const textVariant = size === "large" ? "heading" : "small"
     const iconSize = size === "large" ? 27 : 17
@@ -42,7 +43,8 @@ const StyledButton: React.FC<StyledButtonProps> = ({ label, icon, size, variant,
                 variant === "blue_button" ? styles.blue_button : null,
                 variant === "delete_button" ? styles.delete_button : null,
                 variant === "gray_button" ? styles.gray_button : null,
-                variant === "green_button" ? styles.green_button : null,
+                variant === "dark_button" ? styles.dark_button : null,
+                shadowColor ? { shadowColor: shadowColor } : null,
                 style
             ]}
             onPress={handlePress}
@@ -94,28 +96,48 @@ const styles = StyleSheet.create({
         borderRadius: 15,
         minWidth: 100,
         borderWidth: 1,
-        borderColor: COLORS.PRIMARY_BORDER_DARK
+        borderColor: COLORS.PRIMARY_BORDER_DARK,
+        shadowColor: COLORS.PRIMARY_ACTIVE_BUTTON, // Blue glow
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.5,
+        shadowRadius: 8,
+        elevation: 10,
     },
     delete_button: {
         backgroundColor: "#FF6B6B",
         borderRadius: 15,
         minWidth: 100,
         borderWidth: 1,
-        borderColor: COLORS.PRIMARY_BORDER_DARK
+        borderColor: COLORS.PRIMARY_BORDER_DARK,
+        shadowColor: "#FF6B6B", // Red glow
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.5,
+        shadowRadius: 8,
+        elevation: 10,
     },
     gray_button: {
         backgroundColor: "#666",
         borderRadius: 15,
         minWidth: 100,
         borderWidth: 1,
-        borderColor: COLORS.PRIMARY_BORDER_DARK
+        borderColor: COLORS.PRIMARY_BORDER_DARK,
+        shadowColor: "#666", // Gray glow
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.5,
+        shadowRadius: 8,
+        elevation: 10,
     },
-    green_button: {
-        backgroundColor: COLORS.CHECKBOX_SUCCESS,
+    dark_button: {
+        backgroundColor: COLORS.SECONDARY_BACKGROUND,
         borderRadius: 15,
         minWidth: 100,
         borderWidth: 1,
-        borderColor: COLORS.PRIMARY_BORDER_DARK
+        borderColor: COLORS.PRIMARY_BORDER_DARK,
+        shadowColor: COLORS.CHECKBOX_SUCCESS, // Green/Teal glow
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.3,
+        shadowRadius: 6,
+        elevation: 6,
     }
 })
 

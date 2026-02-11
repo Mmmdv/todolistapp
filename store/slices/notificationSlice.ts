@@ -6,6 +6,7 @@ export interface Notification {
     body: string;
     date: string;
     read: boolean;
+    status?: 'pending' | 'sent' | 'cancelled';
 }
 
 export interface NotificationState {
@@ -26,6 +27,7 @@ export const notificationSlice = createSlice({
             state.notifications.unshift({
                 ...action.payload,
                 read: false,
+                status: action.payload.status || 'pending',
             });
             state.unreadCount += 1;
         },
@@ -52,11 +54,20 @@ export const notificationSlice = createSlice({
                 }
                 state.notifications.splice(index, 1);
             }
+        },
+        cancelAllNotifications: (state) => {
+            const now = new Date();
+            state.notifications.forEach(n => {
+                const nDate = new Date(n.date);
+                if (n.status === 'pending' || nDate > now) {
+                    n.status = 'cancelled';
+                }
+            });
         }
     },
 });
 
-export const { addNotification, markAllAsRead, clearNotifications, deleteNotification, markAsRead } = notificationSlice.actions;
+export const { addNotification, markAllAsRead, clearNotifications, deleteNotification, markAsRead, cancelAllNotifications } = notificationSlice.actions;
 
 export const selectNotifications = (state: { notification: NotificationState }) => state.notification.notifications;
 export const selectUnreadCount = (state: { notification: NotificationState }) => state.notification.unreadCount;

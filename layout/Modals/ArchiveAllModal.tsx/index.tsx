@@ -50,12 +50,12 @@ const ArchiveAllModal: React.FC<ArchiveAllModalProps> = ({
                     <StyledButton
                         label={t("cancel")}
                         onPress={onClose}
-                        variant="blue_button"
+                        variant="dark_button"
                     />
                     <StyledButton
                         label={t("archive_button")}
                         onPress={handleArchiveAll}
-                        style={{ backgroundColor: "#4ECDC4" }}
+                        variant="dark_button"
                     />
                 </View>
             </View>

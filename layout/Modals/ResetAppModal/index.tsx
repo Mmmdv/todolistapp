@@ -45,13 +45,12 @@ const ResetAppModal: React.FC<ResetAppModalProps> = ({
                     <StyledButton
                         label={t("cancel")}
                         onPress={onClose}
-                        variant="blue_button"
+                        variant="dark_button"
                     />
                     <StyledButton
                         label={t("reset_factory")}
                         onPress={onReset}
-                        variant="blue_button"
-                        style={{ backgroundColor: "#FF6B6B" }}
+                        variant="dark_button"
                     />
                 </View>
             </View>

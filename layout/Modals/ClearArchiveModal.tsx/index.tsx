@@ -50,12 +50,12 @@ const ClearArchiveModal: React.FC<ClearArchiveModalProps> = ({
                     <StyledButton
                         label={t("cancel")}
                         onPress={onClose}
-                        variant="blue_button"
+                        variant="dark_button"
                     />
                     <StyledButton
                         label={t("clear_archive_title")}
                         onPress={handleClear}
-                        variant="delete_button"
+                        variant="dark_button"
                     />
                 </View>
             </View>

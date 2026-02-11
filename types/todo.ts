@@ -9,4 +9,5 @@ export interface Todo {
   archivedAt?: string;
   reminder?: string;
   notificationId?: string;
+  reminderCancelled?: boolean;
 }

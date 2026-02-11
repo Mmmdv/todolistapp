@@ -15,6 +15,8 @@ import CelebrationEffect, { CelebrationType, createCelebrationAnimations, playCe
 import { styles } from "./styles"
 
 type TodoItemProps = Todo & {
+    reminder?: string;
+    reminderCancelled?: boolean;
     checkTodo: (id: Todo["id"]) => void
     deleteTodo: (id: Todo["id"]) => void
     editTodo: (id: Todo["id"], title: Todo["title"], reminder?: string) => void
@@ -23,8 +25,8 @@ type TodoItemProps = Todo & {
 
 import { useTheme } from "@/hooks/useTheme"
 
-const TodoItem: React.FC<TodoItemProps> = ({ id, title, isCompleted, isArchived, createdAt, completedAt, updatedAt, archivedAt, reminder, checkTodo, deleteTodo, editTodo, archiveTodo }) => {
-    const { t } = useTheme();
+const TodoItem: React.FC<TodoItemProps> = ({ id, title, isCompleted, isArchived, createdAt, completedAt, updatedAt, archivedAt, reminder, reminderCancelled, checkTodo, deleteTodo, editTodo, archiveTodo }) => {
+    const { t, notificationsEnabled } = useTheme();
     const [isEditModalOpen, setIsEditModalOpen] = useState(false)
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
     const [isArchiveModalOpen, setIsArchiveModalOpen] = useState(false)
@@ -108,7 +110,8 @@ const TodoItem: React.FC<TodoItemProps> = ({ id, title, isCompleted, isArchived,
                 )}
                 <TouchableOpacity
                     style={styles.textContainer}
-                    onPress={isCompleted ? () => setIsViewModalOpen(true) : handleCheckToken}
+                    onPress={() => setIsViewModalOpen(true)}
+                    onLongPress={handleCheckToken}
                     activeOpacity={0.7}
                 >
                     <View style={{ position: 'relative', alignSelf: 'flex-start' }}>
@@ -130,20 +133,44 @@ const TodoItem: React.FC<TodoItemProps> = ({ id, title, isCompleted, isArchived,
                         )}
                     </View>
                     {!isCompleted && createdAt && (
-                        <StyledText style={styles.dateText}>🕐 {formatDate(createdAt)}</StyledText>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 2, gap: 4 }}>
+                            <Ionicons name="time-outline" size={12} color="#eceaeaff" />
+                            <StyledText style={[styles.dateText, { fontSize: 10.5, marginTop: 0 }]}>
+                                {formatDate(createdAt)}
+                            </StyledText>
+                        </View>
                     )}
                     {!isCompleted && updatedAt && (
-                        <StyledText style={[styles.dateText, { color: '#5BC0EB' }]}>✏️ {formatDate(updatedAt)}</StyledText>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 2, gap: 4 }}>
+                            <Ionicons name="create-outline" size={12} color="#5BC0EB" />
+                            <StyledText style={[styles.dateText, { color: '#5BC0EB', fontSize: 10.5, marginTop: 0 }]}>
+                                {formatDate(updatedAt)}
+                            </StyledText>
+                        </View>
                     )}
                     {isCompleted && !isArchived && completedAt && (
-                        <StyledText style={[styles.dateText, { color: '#6c757d', fontSize: 9 }]}>
-                            ✅ {formatDate(completedAt)} • {t("tap_for_details")}
-                        </StyledText>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 2, gap: 4 }}>
+                            <Ionicons name="checkmark-done-circle-outline" size={12} color="#5ca3b4c7" />
+                            <StyledText style={{ color: '#5ca3b4c7', fontSize: 10.5 }}>
+                                {formatDate(completedAt)} • {t("tap_for_details")}
+                            </StyledText>
+                        </View>
                     )}
                     {!isCompleted && !isArchived && reminder && new Date(reminder) > new Date() && (
-                        <StyledText style={[styles.dateText, { color: '#FFD166' }]}>
-                            🔔 {new Date(reminder).toLocaleString()}
-                        </StyledText>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 2, gap: 4 }}>
+                            <Ionicons
+                                name={(notificationsEnabled && !reminderCancelled) ? "alarm-outline" : "notifications-off-outline"}
+                                size={12}
+                                color={(notificationsEnabled && !reminderCancelled) ? "#FFD166" : "#888"}
+                            />
+                            <StyledText style={{
+                                color: (notificationsEnabled && !reminderCancelled) ? '#FFD166' : "#888",
+                                fontSize: 10.5,
+                                textDecorationLine: (notificationsEnabled && !reminderCancelled) ? 'none' : 'line-through'
+                            }}>
+                                {formatDate(reminder)}
+                            </StyledText>
+                        </View>
                     )}
                 </TouchableOpacity>
             </View>
@@ -159,6 +186,7 @@ const TodoItem: React.FC<TodoItemProps> = ({ id, title, isCompleted, isArchived,
                             onClose={() => setIsEditModalOpen(false)}
                             onUpdate={(title, reminder) => editTodo(id, title, reminder)}
                             reminder={reminder}
+                            reminderCancelled={reminderCancelled}
                         />
                         <TouchableOpacity onPress={onPressDelete} activeOpacity={0.7}>
                             <Ionicons name="trash-outline" size={24} color={COLORS.PRIMARY_TEXT} />
@@ -195,6 +223,7 @@ const TodoItem: React.FC<TodoItemProps> = ({ id, title, isCompleted, isArchived,
                     updatedAt={updatedAt}
                     completedAt={completedAt}
                     reminder={reminder}
+                    reminderCancelled={reminderCancelled}
                 />
             </View>
         </Animated.View>
