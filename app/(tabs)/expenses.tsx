@@ -2,7 +2,7 @@ import ComingSoon from "@/components/ComingSoon";
 import { useTheme } from "@/hooks/useTheme";
 import { View } from "react-native";
 
-export default function Utilities() {
+export default function Expenses() {
     const { colors } = useTheme();
 
     return (

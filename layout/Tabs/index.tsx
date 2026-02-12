@@ -74,7 +74,7 @@ function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
             case "shopping": return isFocused ? "cart" : "cart-outline";
             case "events": return isFocused ? "ticket" : "ticket-outline";
             case "movies": return isFocused ? "film" : "film-outline";
-            case "utilities": return isFocused ? "flash" : "flash-outline";
+            case "expenses": return isFocused ? "wallet" : "wallet-outline";
             default: return "ellipse-outline";
         }
     };
@@ -87,7 +87,7 @@ function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
             case "shopping": return t("tab_shopping");
             case "events": return t("tab_events");
             case "movies": return t("tab_movies");
-            case "utilities": return t("tab_utilities");
+            case "expenses": return t("tab_expenses");
             default: return "";
         }
     };
@@ -208,6 +208,8 @@ function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
             isUserDragging.current = false;
         }, 100);
     };
+
+
 
     return (
         <View style={styles.tabBarContainer}>

@@ -123,10 +123,12 @@ const TodoList: React.FC<TodoListProps> = ({ todos, onDeleteTodo, onCheckTodo, o
                         onPress={onAddRequest}
                         activeOpacity={0.8}
                         style={{
-                            backgroundColor: colors.CHECKBOX_SUCCESS,
+                            backgroundColor: colors.SECONDARY_BACKGROUND,
                             paddingVertical: 16,
                             paddingHorizontal: 32,
-                            borderRadius: 30,
+                            borderRadius: 15,
+                            borderWidth: 1,
+                            borderColor: colors.PRIMARY_BORDER_DARK,
                             flexDirection: 'row',
                             alignItems: 'center',
                             gap: 8,
@@ -137,8 +139,8 @@ const TodoList: React.FC<TodoListProps> = ({ todos, onDeleteTodo, onCheckTodo, o
                             elevation: 5
                         }}
                     >
-                        <Ionicons name="add" size={24} color="#FFF" />
-                        <StyledText style={{ color: '#FFF', fontSize: 16, fontWeight: 'bold' }}>{t("create_task")}</StyledText>
+                        <Ionicons name="add" size={24} color={colors.CHECKBOX_SUCCESS} />
+                        <StyledText style={{ color: colors.CHECKBOX_SUCCESS, fontSize: 16, fontWeight: 'bold' }}>{t("create_task")}</StyledText>
                     </TouchableOpacity>
                 </View>
             </ScrollView>
@@ -160,11 +162,11 @@ const TodoList: React.FC<TodoListProps> = ({ todos, onDeleteTodo, onCheckTodo, o
             {/* To Do Section */}
             <View style={styles.sectionContainer}>
                 <TouchableOpacity
-                    style={[styles.sectionHeader, sortedPendingTodos.length === 0 && { opacity: 0.5 }]}
+                    style={styles.sectionHeader}
                     onPress={() => toggleSection(setTodoExpanded)}
                     disabled={sortedPendingTodos.length === 0}
                 >
-                    <View style={styles.sectionTitleContainer}>
+                    <View style={[styles.sectionTitleContainer, sortedPendingTodos.length === 0 && { opacity: 0.5 }]}>
                         <Ionicons name="list-circle" size={24} color="#5BC0EB" />
                         <StyledText style={[styles.sectionTitle, { color: colors.PRIMARY_TEXT }]}>
                             {t("todo")} ({sortedPendingTodos.length})
@@ -191,6 +193,7 @@ const TodoList: React.FC<TodoListProps> = ({ todos, onDeleteTodo, onCheckTodo, o
                             name={todoExpanded ? "chevron-down" : "chevron-forward"}
                             size={20}
                             color={colors.PRIMARY_TEXT}
+                            style={[sortedPendingTodos.length === 0 && { opacity: 0.5 }]}
                         />
                     </View>
                 </TouchableOpacity>

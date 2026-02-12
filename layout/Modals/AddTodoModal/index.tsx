@@ -23,7 +23,7 @@ type AddTodoModalProps = {
 
 const AddTodoModal: React.FC<AddTodoModalProps> = ({
     isOpen, onClose, onAdd }) => {
-    const { t, lang, notificationsEnabled } = useTheme();
+    const { t, lang, notificationsEnabled, todoNotifications } = useTheme();
     const dispatch = useAppDispatch();
 
     const [isFocused, setIsFocused] = useState(false)
@@ -71,7 +71,7 @@ const AddTodoModal: React.FC<AddTodoModalProps> = ({
         const finalDate = dateOverride || reminderDate;
         let notificationId: string | undefined;
 
-        if (finalDate && notificationsEnabled) {
+        if (finalDate && notificationsEnabled && todoNotifications) {
             notificationId = await schedulePushNotification(title, t("reminder"), finalDate);
             // Add to history
             if (notificationId) {
@@ -95,6 +95,16 @@ const AddTodoModal: React.FC<AddTodoModalProps> = ({
             setShowPermissionModal(true);
             return;
         }
+
+        // If system notifications are on, but Todo notifications are off
+        if (!todoNotifications) {
+            // Optional: You might want to alert the user or just let them set the date without notification
+            // For now, we will let them set the date (as requested logic is just to check before scheduling)
+            // But if specific requirement is to BLOCK setting reminder if todoNotifications is off:
+            // Alert.alert(t("attention"), t("enable_todo_notifications"));
+            // return;
+        }
+
         proceedWithReminder();
     }
 
@@ -578,10 +588,10 @@ const localStyles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: "#5BC0EB", // Changed from CHECKBOX_SUCCESS (turquoise) to Sky Blue
+        backgroundColor: "#39b2e6ff", // Changed from CHECKBOX_SUCCESS (turquoise) to Sky Blue
         borderRadius: 12,
         paddingVertical: 12,
-        paddingHorizontal: 40, // Increased to account for absolute button
+        paddingHorizontal: 35, // Increased to account for absolute button
         position: 'relative',
     },
     chipContent: {
@@ -591,13 +601,13 @@ const localStyles = StyleSheet.create({
     },
     chipText: {
         color: "#000", // Darker text as requested
-        fontSize: 15,
+        fontSize: 14,
         fontWeight: "600",
         textAlign: 'center',
     },
     clearButton: {
         position: 'absolute',
-        right: 10,
+        right: 5,
         padding: 4,
     },
     iosPickerContainer: {

@@ -28,7 +28,7 @@ type EditTodoModalProps = {
 
 const EditTodoModal: React.FC<EditTodoModalProps> = ({
     isOpen, onClose, onUpdate, title, reminder, reminderCancelled, notificationId }) => {
-    const { t, lang, notificationsEnabled } = useTheme();
+    const { t, lang, notificationsEnabled, todoNotifications } = useTheme();
     const dispatch = useAppDispatch();
 
     const [isFocused, setIsFocused] = useState(false)
@@ -93,7 +93,7 @@ const EditTodoModal: React.FC<EditTodoModalProps> = ({
             }));
         }
 
-        if (reminderDate && notificationsEnabled) {
+        if (reminderDate && notificationsEnabled && todoNotifications) {
             // Schedule NEW notification
             const newId = await schedulePushNotification(updatedTitle, t("reminder"), reminderDate);
             newNotificationId = newId;
@@ -625,10 +625,10 @@ const localStyles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: "#5BC0EB",
+        backgroundColor: "#39b2e6ff",
         borderRadius: 12,
         paddingVertical: 12,
-        paddingHorizontal: 40, // Increased to account for absolute button
+        paddingHorizontal: 35, // Increased to account for absolute button
         position: 'relative',
     },
     chipContent: {
@@ -644,7 +644,7 @@ const localStyles = StyleSheet.create({
     },
     clearButton: {
         position: 'absolute',
-        right: 10,
+        right: 5,
         padding: 4,
     },
     iosPickerContainer: {

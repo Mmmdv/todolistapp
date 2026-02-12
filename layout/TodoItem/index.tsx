@@ -132,9 +132,9 @@ const TodoItem: React.FC<TodoItemProps> = ({ id, title, isCompleted, isArchived,
                             }} />
                         )}
                     </View>
-                    {!isCompleted && createdAt && (
+                    {!isCompleted && createdAt && !updatedAt && (
                         <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 2, gap: 4 }}>
-                            <Ionicons name="time-outline" size={12} color="#eceaeaff" />
+                            <Ionicons name="add-circle" size={12} color="#eceaeaff" />
                             <StyledText style={[styles.dateText, { fontSize: 10.5, marginTop: 0 }]}>
                                 {formatDate(createdAt)}
                             </StyledText>
@@ -150,9 +150,9 @@ const TodoItem: React.FC<TodoItemProps> = ({ id, title, isCompleted, isArchived,
                     )}
                     {isCompleted && !isArchived && completedAt && (
                         <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 2, gap: 4 }}>
-                            <Ionicons name="checkmark-done-circle-outline" size={12} color="#5ca3b4c7" />
-                            <StyledText style={{ color: '#5ca3b4c7', fontSize: 10.5 }}>
-                                {formatDate(completedAt)} • {t("tap_for_details")}
+                            <Ionicons name="checkmark-done-outline" size={12} color="#69c4dbe8" />
+                            <StyledText style={{ color: '#69c4dbe8', fontSize: 10.5 }}>
+                                {formatDate(completedAt)}
                             </StyledText>
                         </View>
                     )}

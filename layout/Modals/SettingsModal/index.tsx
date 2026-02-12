@@ -14,7 +14,7 @@ import Constants from "expo-constants";
 import * as Notifications from "expo-notifications";
 import * as Updates from "expo-updates";
 import React from "react";
-import { Alert, Image, Linking, Modal, Platform, StyleSheet, Switch, TouchableOpacity, View } from "react-native";
+import { Alert, Image, LayoutAnimation, Linking, Modal, Platform, StyleSheet, Switch, TouchableOpacity, UIManager, View } from "react-native";
 
 interface SettingsModalProps {
     visible: boolean;
@@ -22,11 +22,16 @@ interface SettingsModalProps {
 }
 
 const SettingsModal: React.FC<SettingsModalProps> = ({ visible, onClose }) => {
-    const { colors, t, lang, theme, notificationsEnabled } = useTheme();
+    const { colors, t, lang, theme, notificationsEnabled, todoNotifications, birthdayNotifications, movieNotifications } = useTheme();
     const dispatch = useAppDispatch();
     const todos = useAppSelector(selectTodos);
 
     const [isLoadingNotifications, setIsLoadingNotifications] = React.useState(false);
+
+    // Enable LayoutAnimation for Android
+    if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
+        UIManager.setLayoutAnimationEnabledExperimental(true);
+    }
 
     // Sync switch with actual OS permissions when modal opens
     React.useEffect(() => {
@@ -51,7 +56,20 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ visible, onClose }) => {
         dispatch(updateAppSetting({ theme: newTheme }));
     };
 
+    const toggleTodoNotifications = (value: boolean) => {
+        dispatch(updateAppSetting({ todoNotifications: value }));
+    };
+
+    const toggleBirthdayNotifications = (value: boolean) => {
+        dispatch(updateAppSetting({ birthdayNotifications: value }));
+    };
+
+    const toggleMovieNotifications = (value: boolean) => {
+        dispatch(updateAppSetting({ movieNotifications: value }));
+    };
+
     const handleNotificationToggle = async (value: boolean) => {
+        LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
         if (value) {
             // User trying to enable
             setIsLoadingNotifications(true);
@@ -156,7 +174,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ visible, onClose }) => {
             <TouchableOpacity
                 style={styles.overlay}
                 activeOpacity={1}
-                onPress={onClose}
+                onPress={() => { }}
             >
                 <View style={[styles.modalContent, { backgroundColor: colors.SECONDARY_BACKGROUND, borderColor: colors.PRIMARY_BORDER_DARK }]}>
                     <View style={styles.header}>
@@ -273,9 +291,61 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ visible, onClose }) => {
                                     thumbColor={"#f4f3f4"}
                                     ios_backgroundColor="#3e3e3e"
                                     onValueChange={handleNotificationToggle}
-                                    value={notificationsEnabled ?? true}
+                                    value={notificationsEnabled ?? false}
                                 />
                             </View>
+
+                            {notificationsEnabled && (
+                                <View style={{
+                                    // Removed backgroundColor
+                                    borderRadius: 12,
+                                    marginHorizontal: 4,
+                                    // Reduced margins as background is gone, but keeping some structure
+                                    marginBottom: 0,
+                                    marginTop: 0,
+                                    paddingVertical: 4
+                                }}>
+                                    <View style={[styles.aboutRow, { borderBottomWidth: 1, borderColor: colors.PRIMARY_BORDER_DARK, paddingHorizontal: 12 }]}>
+                                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                                            <Ionicons name="list" size={18} color={colors.PRIMARY_TEXT} style={{ opacity: 0.7 }} />
+                                            <StyledText style={[styles.aboutLabel, { color: colors.PRIMARY_TEXT, fontSize: 15 }]}>{t("notifications_todo")}</StyledText>
+                                        </View>
+                                        <Switch
+                                            trackColor={{ false: "#767577", true: colors.CHECKBOX_SUCCESS }}
+                                            thumbColor={"#f4f3f4"}
+                                            ios_backgroundColor="#3e3e3e"
+                                            onValueChange={toggleTodoNotifications}
+                                            value={todoNotifications ?? true}
+                                        />
+                                    </View>
+                                    <View style={[styles.aboutRow, { borderBottomWidth: 1, borderColor: colors.PRIMARY_BORDER_DARK, paddingHorizontal: 12 }]}>
+                                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                                            <Ionicons name="gift" size={18} color={colors.PRIMARY_TEXT} style={{ opacity: 0.7 }} />
+                                            <StyledText style={[styles.aboutLabel, { color: colors.PRIMARY_TEXT, fontSize: 15 }]}>{t("notifications_birthday")}</StyledText>
+                                        </View>
+                                        <Switch
+                                            trackColor={{ false: "#767577", true: colors.CHECKBOX_SUCCESS }}
+                                            thumbColor={"#f4f3f4"}
+                                            ios_backgroundColor="#3e3e3e"
+                                            onValueChange={toggleBirthdayNotifications}
+                                            value={birthdayNotifications ?? true}
+                                        />
+                                    </View>
+                                    <View style={[styles.aboutRow, { borderBottomWidth: 0, paddingHorizontal: 12 }]}>
+                                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                                            <Ionicons name="videocam" size={18} color={colors.PRIMARY_TEXT} style={{ opacity: 0.7 }} />
+                                            <StyledText style={[styles.aboutLabel, { color: colors.PRIMARY_TEXT, fontSize: 15 }]}>{t("notifications_movie")}</StyledText>
+                                        </View>
+                                        <Switch
+                                            trackColor={{ false: "#767577", true: colors.CHECKBOX_SUCCESS }}
+                                            thumbColor={"#f4f3f4"}
+                                            ios_backgroundColor="#3e3e3e"
+                                            onValueChange={toggleMovieNotifications}
+                                            value={movieNotifications ?? true}
+                                        />
+                                    </View>
+                                </View>
+                            )}
                         </View>
                     </View>
 
@@ -288,7 +358,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ visible, onClose }) => {
                             <View style={[styles.aboutRow, { borderColor: colors.PRIMARY_BORDER_DARK, borderBottomWidth: 0 }]}>
                                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
                                     <Image
-                                        source={require("@/assets/images/nar_48x48.png")}
+                                        source={require("@/assets/images/mandarin_75x75.png")}
                                         style={{ width: 35, height: 35, borderRadius: 8 }}
                                     />
                                     <View>

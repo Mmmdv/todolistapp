@@ -1,4 +1,4 @@
-import CustomTabBar from "@/components/CustomTabBar";
+import CustomTabBar from "@/layout/Tabs";
 import { Tabs } from "expo-router";
 
 export default function TabsLayout() {
@@ -11,7 +11,9 @@ export default function TabsLayout() {
         >
             <Tabs.Screen
                 name="index"
-                options={{ title: "Home" }}
+                options={{
+                    title: "Home",
+                }}
             />
             <Tabs.Screen
                 name="birthday"
@@ -27,8 +29,8 @@ export default function TabsLayout() {
             />
 
             <Tabs.Screen
-                name="utilities"
-                options={{ title: "Utilities" }}
+                name="expenses"
+                options={{ title: "Expenses" }}
             />
             <Tabs.Screen
                 name="movies"

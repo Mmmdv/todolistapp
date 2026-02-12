@@ -1,6 +1,7 @@
 import StyledText from "@/components/StyledText";
 import { useTheme } from "@/hooks/useTheme";
-import SettingsModal from "@/layout/Modals/SettingsModal.tsx";
+import SettingsModal from "@/layout/Modals/SettingsModal";
+import { Poppins_600SemiBold, useFonts } from '@expo-google-fonts/poppins';
 import { Ionicons } from "@expo/vector-icons";
 import React, { useState } from "react";
 import { Image, Share, StyleSheet, TouchableOpacity, View } from "react-native";
@@ -11,6 +12,14 @@ const Header: React.FC = () => {
   const { colors, t } = useTheme();
   const [settingsVisible, setSettingsVisible] = useState(false);
   const [notificationsVisible, setNotificationsVisible] = useState(false);
+
+  let [fontsLoaded] = useFonts({
+    Poppins_600SemiBold,
+  });
+
+  if (!fontsLoaded) {
+    return null;
+  }
 
   const onShare = async () => {
     try {
@@ -26,9 +35,9 @@ const Header: React.FC = () => {
     <View style={[styles.container, { backgroundColor: colors.SECONDARY_BACKGROUND, borderBottomColor: colors.PRIMARY_BORDER_DARK }]}>
       <View style={styles.leftSection}>
         <View style={styles.iconWrapper}>
-          <Image source={require("@/assets/images/nar_48x48.png")} style={styles.logoImage} />
+          <Image source={require("@/assets/images/mandarin_75x75.png")} style={styles.logoImage} />
         </View>
-        <StyledText style={styles.appName}>Nar</StyledText>
+        <StyledText style={styles.appName}>Mandarin</StyledText>
       </View>
       <View style={styles.rightSection}>
         <TouchableOpacity onPress={onShare} activeOpacity={0.7} style={styles.iconButton}>
@@ -74,8 +83,8 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   iconWrapper: {
-    width: 40,
-    height: 40,
+    width: 32,
+    height: 32,
     justifyContent: "center",
     alignItems: "center",
   },
@@ -85,10 +94,9 @@ const styles = StyleSheet.create({
     resizeMode: "contain",
   },
   appName: {
-    fontSize: 22,
-    fontWeight: "800",
-    color: "#e20026d8",
-    letterSpacing: 0.5,
+    fontFamily: 'Poppins_600SemiBold',
+    fontSize: 20,
+    color: '#FF6F00',
   },
   iconButton: {
     padding: 8,

@@ -1,13 +1,22 @@
 import StyledText from "@/components/StyledText";
 import { useTheme } from "@/hooks/useTheme";
 import { Ionicons } from "@expo/vector-icons";
-import React, { useEffect, useRef } from "react";
-import { Animated, Easing, StyleSheet, View } from "react-native";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import { Animated, Easing, RefreshControl, ScrollView, StyleSheet, View } from "react-native";
 
 const ComingSoon: React.FC = () => {
     const { colors, t } = useTheme();
     const scaleAnim = useRef(new Animated.Value(0.5)).current;
     const opacityAnim = useRef(new Animated.Value(0)).current;
+    const [refreshing, setRefreshing] = useState(false);
+
+    const onRefresh = useCallback(() => {
+        setRefreshing(true);
+        // Simulate refresh delay
+        setTimeout(() => {
+            setRefreshing(false);
+        }, 1500);
+    }, []);
 
     useEffect(() => {
         Animated.parallel([
@@ -27,7 +36,18 @@ const ComingSoon: React.FC = () => {
     }, []);
 
     return (
-        <View style={[styles.container, { backgroundColor: colors.PRIMARY_BACKGROUND }]}>
+        <ScrollView
+            contentContainerStyle={[styles.container, { backgroundColor: colors.PRIMARY_BACKGROUND }]}
+            refreshControl={
+                <RefreshControl
+                    refreshing={refreshing}
+                    onRefresh={onRefresh}
+                    tintColor={colors.PRIMARY_TEXT}
+                    colors={[colors.PRIMARY_TEXT]}
+                    progressBackgroundColor={colors.SECONDARY_BACKGROUND}
+                />
+            }
+        >
             <Animated.View style={[styles.content, { opacity: opacityAnim, transform: [{ scale: scaleAnim }] }]}>
                 <View style={[styles.iconContainer, { backgroundColor: colors.SECONDARY_BACKGROUND }]}>
                     <Ionicons name="rocket-outline" size={60} color="#4ECDC4" />
@@ -36,13 +56,13 @@ const ComingSoon: React.FC = () => {
                     {t("coming_soon")}
                 </StyledText>
             </Animated.View>
-        </View>
+        </ScrollView>
     );
 };
 
 const styles = StyleSheet.create({
     container: {
-        flex: 1,
+        flexGrow: 1,
         justifyContent: "center",
         alignItems: "center",
         padding: 20,

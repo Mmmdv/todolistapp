@@ -15,18 +15,30 @@ export interface AppState {
     lang: Lang
     theme: Theme
     notificationsEnabled: boolean
+    todoNotifications: boolean
+    birthdayNotifications: boolean
+    movieNotifications: boolean
+    username?: string
 }
 
 const initialState: AppState = {
     lang: Lang.EN,
     theme: Theme.DARK,
-    notificationsEnabled: false
+    notificationsEnabled: false,
+    todoNotifications: true,
+    birthdayNotifications: true,
+    movieNotifications: true,
+    username: ""
 }
 
 export interface UpdateAppSettingsPayload {
     lang?: Lang
     theme?: Theme
     notificationsEnabled?: boolean
+    todoNotifications?: boolean
+    birthdayNotifications?: boolean
+    movieNotifications?: boolean
+    username?: string
 }
 
 export const appSlice = createSlice({
@@ -37,10 +49,14 @@ export const appSlice = createSlice({
             state: AppState,
             action: PayloadAction<UpdateAppSettingsPayload>
         ) => {
-            const { lang, theme, notificationsEnabled } = action.payload;
+            const { lang, theme, notificationsEnabled, username } = action.payload;
             if (lang) state.lang = lang
             if (theme) state.theme = theme
             if (notificationsEnabled !== undefined) state.notificationsEnabled = notificationsEnabled
+            if (action.payload.todoNotifications !== undefined) state.todoNotifications = action.payload.todoNotifications
+            if (action.payload.birthdayNotifications !== undefined) state.birthdayNotifications = action.payload.birthdayNotifications
+            if (action.payload.movieNotifications !== undefined) state.movieNotifications = action.payload.movieNotifications
+            if (username !== undefined) state.username = username
         },
     },
 })
