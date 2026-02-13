@@ -18,8 +18,16 @@ export const sortTodos = (
 ): Todo[] => {
     return [...todoList].sort((a, b) => {
         if (sortBy === "date") {
-            const dateA = new Date(a[dateKey] || a.createdAt).getTime()
-            const dateB = new Date(b[dateKey] || b.createdAt).getTime()
+            const getLatestDate = (todo: Todo) => {
+                const dates = [new Date(todo.createdAt).getTime()]
+                if (todo.updatedAt) dates.push(new Date(todo.updatedAt).getTime())
+                if (todo.completedAt) dates.push(new Date(todo.completedAt).getTime())
+                if (todo.archivedAt) dates.push(new Date(todo.archivedAt).getTime())
+                return Math.max(...dates)
+            }
+
+            const dateA = getLatestDate(a)
+            const dateB = getLatestDate(b)
             return sortOrder === "asc" ? dateA - dateB : dateB - dateA
         } else {
             const textA = a.title.toLowerCase()

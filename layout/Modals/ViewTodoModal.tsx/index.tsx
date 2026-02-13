@@ -3,7 +3,7 @@ import StyledModal from "@/components/StyledModal";
 import StyledText from "@/components/StyledText";
 import { modalStyles } from "@/constants/modalStyles";
 import { COLORS } from "@/constants/ui";
-import { formatDate } from "@/helpers/date";
+import { formatDate, formatDuration } from "@/helpers/date";
 import { useTheme } from "@/hooks/useTheme";
 import { Todo } from "@/types/todo";
 import { Ionicons } from "@expo/vector-icons";
@@ -43,80 +43,100 @@ const ViewTodoModal: React.FC<ViewTodoModalProps> = ({
                     shadowRadius: 8,
                     elevation: 5
                 }]}>
-                    <Ionicons name="checkmark-done-circle" size={28} color="#4ECDC4" />
+                    <Ionicons name="checkbox" size={28} color="#4ECDC4" />
                 </View>
 
                 <StyledText style={[modalStyles.headerText, localStyles.headerText]}>{t("task_details")}</StyledText>
 
                 <View style={modalStyles.divider} />
 
-                <View style={localStyles.detailsContainer}>
-                    <View style={localStyles.detailRow}>
-                        <StyledText style={localStyles.label}>{t("title")}</StyledText>
-                        <StyledText style={localStyles.value}>{title}</StyledText>
-                    </View>
+                {/* Prominent Task Title */}
+                <View style={localStyles.titleSection}>
+                    <StyledText style={localStyles.titleValue}>{title}</StyledText>
+                </View>
 
-                    <View style={localStyles.detailRow}>
-                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                            <Ionicons name="time-outline" size={16} color="#eceaeaff" />
-                            <StyledText style={localStyles.label}>{t("created")}</StyledText>
+                {/* Table-like Date Section */}
+                <View style={localStyles.tableContainer}>
+                    <View style={localStyles.tableRow}>
+                        <View style={localStyles.tableLabelColumn}>
+                            <Ionicons name="add" size={18} color="#50dce0ff" />
+                            <StyledText style={localStyles.tableLabelText}>{t("created")}</StyledText>
                         </View>
-                        <StyledText style={localStyles.value}>{formatDate(createdAt)}</StyledText>
+                        <View style={localStyles.tableValueColumn}>
+                            <StyledText style={localStyles.tableValueText}>{formatDate(createdAt)}</StyledText>
+                        </View>
                     </View>
 
                     {updatedAt && (
-                        <View style={localStyles.detailRow}>
-                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                                <Ionicons name="create-outline" size={16} color="#5BC0EB" />
-                                <StyledText style={localStyles.label}>{t("edited")}</StyledText>
+                        <View style={[localStyles.tableRow, localStyles.tableRowBorder]}>
+                            <View style={localStyles.tableLabelColumn}>
+                                <Ionicons name="create-outline" size={18} color="#5BC0EB" />
+                                <StyledText style={localStyles.tableLabelText}>{t("edited")}</StyledText>
                             </View>
-                            <StyledText style={[localStyles.value, { color: '#5BC0EB' }]}>
-                                {formatDate(updatedAt)}
-                            </StyledText>
+                            <View style={localStyles.tableValueColumn}>
+                                <StyledText style={[localStyles.tableValueText, { color: '#5BC0EB' }]}>
+                                    {formatDate(updatedAt)}
+                                </StyledText>
+                            </View>
                         </View>
                     )}
 
                     {completedAt && (
-                        <View style={localStyles.detailRow}>
-                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                                <Ionicons name="checkmark-circle-outline" size={16} color="#4ECDC4" />
-                                <StyledText style={localStyles.label}>{t("completed")}</StyledText>
+                        <View style={[localStyles.tableRow, localStyles.tableRowBorder]}>
+                            <View style={localStyles.tableLabelColumn}>
+                                <Ionicons name="checkmark-done-outline" size={18} color="#4ECDC4" />
+                                <StyledText style={localStyles.tableLabelText}>{t("completed")}</StyledText>
                             </View>
-                            <StyledText style={[localStyles.value, { color: '#4ECDC4' }]}>
-                                {formatDate(completedAt)}
-                            </StyledText>
+                            <View style={localStyles.tableValueColumn}>
+                                <StyledText style={[localStyles.tableValueText, { color: '#4ECDC4' }]}>
+                                    {formatDate(completedAt)}
+                                </StyledText>
+                            </View>
                         </View>
                     )}
 
+                    <View style={[localStyles.tableRow, localStyles.tableRowBorder]}>
+                        <View style={localStyles.tableLabelColumn}>
+                            <Ionicons name="speedometer-outline" size={18} color="#FF7043" />
+                            <StyledText style={localStyles.tableLabelText}>
+                                {completedAt ? t("execution_time") : t("time_elapsed")}
+                            </StyledText>
+                        </View>
+                        <View style={localStyles.tableValueColumn}>
+                            <StyledText style={[localStyles.tableValueText, { color: '#FF7043' }]}>
+                                {completedAt
+                                    ? formatDuration(updatedAt || createdAt, completedAt, t)
+                                    : formatDuration(updatedAt || createdAt, new Date().toISOString(), t)
+                                }
+                            </StyledText>
+                        </View>
+                    </View>
+
                     {reminder && (
-                        <View style={localStyles.detailRow}>
-                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                                <Ionicons name="alarm-outline" size={16} color="#FFD166" />
-                                <StyledText style={localStyles.label}>{t("reminder")}</StyledText>
+                        <View style={[localStyles.tableRow, localStyles.tableRowBorder]}>
+                            <View style={localStyles.tableLabelColumn}>
+                                <Ionicons name="alarm-outline" size={18} color="#FFD166" />
+                                <StyledText style={localStyles.tableLabelText}>{t("reminder")}</StyledText>
                             </View>
-                            <View>
-                                <StyledText style={[localStyles.value, { color: '#FFD166' }]}>
-                                    {formatDate(reminder)}
-                                </StyledText>
-                                {reminderCancelled ? (
-                                    <StyledText style={{ fontSize: 10, color: COLORS.ERROR_INPUT_TEXT, fontWeight: '600' }}>
-                                        {t("canceled")}
+                            <View style={localStyles.tableValueColumn}>
+                                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                                    {reminderCancelled ? (
+                                        <Ionicons name="close-circle-outline" size={14} color={COLORS.ERROR_INPUT_TEXT} />
+                                    ) : new Date(reminder) > new Date() ? (
+                                        <Ionicons name="hourglass-outline" size={14} color="#FFB74D" />
+                                    ) : (
+                                        <Ionicons name="checkmark-done-circle-outline" size={14} color={COLORS.CHECKBOX_SUCCESS} />
+                                    )}
+                                    <StyledText style={[localStyles.tableValueText, { color: '#FFD166' }]}>
+                                        {formatDate(reminder)}
                                     </StyledText>
-                                ) : new Date(reminder) > new Date() ? (
-                                    <StyledText style={{ fontSize: 10, color: "#FFB74D", fontWeight: '600' }}>
-                                        {t("pending")}
-                                    </StyledText>
-                                ) : (
-                                    <StyledText style={{ fontSize: 10, color: COLORS.CHECKBOX_SUCCESS, fontWeight: '600' }}>
-                                        {t("sent")}
-                                    </StyledText>
-                                )}
+                                </View>
                             </View>
                         </View>
                     )}
                 </View>
 
-                <View style={[modalStyles.buttonsContainer, { justifyContent: "center" }]}>
+                <View style={[modalStyles.buttonsContainer, { justifyContent: "center", marginTop: 8 }]}>
                     <StyledButton
                         label={t("close")}
                         onPress={onClose}
@@ -130,39 +150,107 @@ const ViewTodoModal: React.FC<ViewTodoModalProps> = ({
 
 const localStyles = StyleSheet.create({
     container: {
-        borderRadius: 20,
+        borderRadius: 24,
         borderWidth: 1,
         padding: 24,
-        minWidth: 320,
-        gap: 16,
+        minWidth: 340,
+        gap: 12,
         shadowColor: "#000",
-        shadowOffset: { width: 0, height: 4 },
+        shadowOffset: { width: 0, height: 10 },
         shadowOpacity: 0.3,
-        shadowRadius: 4.65,
-        elevation: 8,
+        shadowRadius: 20,
+        elevation: 10,
     },
     headerText: {
-        fontSize: 20,
+        fontSize: 18,
         fontWeight: "bold",
+        textAlign: 'center',
+        opacity: 0.8,
     },
-    detailsContainer: {
+    titleSection: {
+        width: '100%',
+        paddingVertical: 12,
+        backgroundColor: 'rgba(255,255,255,0.03)',
+        borderRadius: 16,
+        marginBottom: 8,
+    },
+    titleLabel: {
+        fontSize: 13,
+        color: "#aca9a9ff",
+        fontWeight: "bold",
+        marginBottom: 8,
+    },
+    titleValue: {
+        width: '100%',
+        fontSize: 16,
+        color: COLORS.PRIMARY_TEXT,
+        fontWeight: "bold",
+        paddingHorizontal: 16,
+        textAlign: 'left',
+    },
+    tableContainer: {
         width: "100%",
-        gap: 16,
+        backgroundColor: 'rgba(255,255,255,0.05)',
+        borderRadius: 16,
+        padding: 4,
+        overflow: 'hidden',
     },
-    detailRow: {
-        gap: 6,
+    tableRow: {
+        flexDirection: 'row',
+        paddingVertical: 14,
+        paddingHorizontal: 12,
+        alignItems: 'center',
     },
-    label: {
-        fontSize: 14,
+    tableRowBorder: {
+        borderTopWidth: 1,
+        borderTopColor: 'rgba(255,255,255,0.08)',
+    },
+    tableLabelColumn: {
+        flex: 1,
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 10,
+    },
+    tableLabelText: {
+        fontSize: 12,
         color: "#aca9a9ff",
         fontWeight: "500",
-        letterSpacing: 0.2,
     },
-    value: {
+    tableValueColumn: {
+        flex: 1.5,
+        alignItems: 'flex-end',
+    },
+    tableValueText: {
         fontSize: 12,
         color: COLORS.PRIMARY_TEXT,
-        fontWeight: "500",
-        lineHeight: 20,
+        fontWeight: "600",
+    },
+    statusBadge: {
+        marginTop: 4,
+        paddingHorizontal: 8,
+        paddingVertical: 2,
+        borderRadius: 8,
+        backgroundColor: 'rgba(255,255,255,0.05)',
+    },
+    statusTextCancelled: {
+        fontSize: 10,
+        color: COLORS.ERROR_INPUT_TEXT,
+        fontWeight: 'bold',
+    },
+    statusTextPending: {
+        fontSize: 10,
+        color: "#FFB74D",
+        fontWeight: 'bold',
+    },
+    statusTextSent: {
+        fontSize: 10,
+        color: COLORS.CHECKBOX_SUCCESS,
+        fontWeight: 'bold',
+    },
+    statusRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 4,
     },
 })
 

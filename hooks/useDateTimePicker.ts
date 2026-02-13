@@ -19,6 +19,7 @@ export function useDateTimePicker(options: UseDateTimePickerOptions = {}) {
     const [tempDate, setTempDate] = useState<Date | undefined>(undefined);
     const [showPermissionModal, setShowPermissionModal] = useState(false);
     const [showPastDateAlert, setShowPastDateAlert] = useState(false);
+    const [pickerToReopen, setPickerToReopen] = useState<'date' | 'time' | null>(null);
 
     const startReminderFlow = () => {
         Haptics.selectionAsync();
@@ -85,9 +86,11 @@ export function useDateTimePicker(options: UseDateTimePickerOptions = {}) {
         checkDate.setHours(0, 0, 0, 0);
 
         if (checkDate < today) {
+            setPickerToReopen('date');
+            setShowDatePicker(false); // Close current picker first
             setTimeout(() => {
                 setShowPastDateAlert(true);
-            }, 100);
+            }, 350);
             return;
         }
 
@@ -112,7 +115,7 @@ export function useDateTimePicker(options: UseDateTimePickerOptions = {}) {
                 newDate.setMinutes(selectedTime.getMinutes());
 
                 if (newDate < new Date()) {
-                    setShowTimePicker(false);
+                    setPickerToReopen('time');
                     setTimeout(() => {
                         setShowPastDateAlert(true);
                     }, 100);
@@ -143,10 +146,11 @@ export function useDateTimePicker(options: UseDateTimePickerOptions = {}) {
         const finalDate = tempDate || reminderDate || new Date();
 
         if (finalDate < new Date()) {
-            setShowTimePicker(false);
+            setPickerToReopen('time');
+            setShowTimePicker(false); // Close current picker first
             setTimeout(() => {
                 setShowPastDateAlert(true);
-            }, 100);
+            }, 350);
             return;
         }
 
@@ -172,6 +176,24 @@ export function useDateTimePicker(options: UseDateTimePickerOptions = {}) {
         });
     };
 
+    const goBackToDatePicker = () => {
+        setShowTimePicker(false);
+        setTimeout(() => {
+            setShowDatePicker(true);
+        }, 350);
+    };
+
+    const closePastDateAlert = () => {
+        setShowPastDateAlert(false);
+        if (pickerToReopen) {
+            setTimeout(() => {
+                if (pickerToReopen === 'date') setShowDatePicker(true);
+                else if (pickerToReopen === 'time') setShowTimePicker(true);
+                setPickerToReopen(null);
+            }, 350);
+        }
+    };
+
     const closePickers = () => {
         setShowDatePicker(false);
         setShowTimePicker(false);
@@ -184,6 +206,7 @@ export function useDateTimePicker(options: UseDateTimePickerOptions = {}) {
         setTempDate(undefined);
         setShowPermissionModal(false);
         setShowPastDateAlert(false);
+        setPickerToReopen(null);
     };
 
     return {
@@ -197,6 +220,7 @@ export function useDateTimePicker(options: UseDateTimePickerOptions = {}) {
         setShowPermissionModal,
         showPastDateAlert,
         setShowPastDateAlert,
+        closePastDateAlert,
 
         // Actions
         startReminderFlow,
@@ -205,6 +229,7 @@ export function useDateTimePicker(options: UseDateTimePickerOptions = {}) {
         confirmDateIOS,
         onChangeTime,
         confirmTimeIOS,
+        goBackToDatePicker,
         closePickers,
         resetState,
 

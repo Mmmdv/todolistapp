@@ -1,4 +1,6 @@
+import GestureWrapper from "@/components/GestureWrapper";
 import { COLORS } from "@/constants/ui";
+import { useTheme } from "@/hooks/useTheme";
 import useTodo from "@/hooks/useTodo";
 import AddTodoModal from "@/layout/Modals/AddTodoModal";
 import TodoList from "@/layout/TodoList";
@@ -6,6 +8,7 @@ import { useEffect, useState } from "react";
 import { Platform, StatusBar, StyleSheet, UIManager, View } from "react-native";
 
 export default function Index() {
+  const { t } = useTheme();
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
   useEffect(() => {
@@ -34,26 +37,32 @@ export default function Index() {
   }
 
   return (
-    <View style={styles.container}>
-      <StatusBar barStyle={"light-content"}></StatusBar>
-      <TodoList
-        todos={todos}
-        onDeleteTodo={onDeleteTodo}
-        onCheckTodo={onCheckTodo}
-        onEditTodo={onEditTodo}
-        onArchiveTodo={onArchiveTodo}
-        onArchiveAll={onArchiveAll}
-        onClearArchive={onClearArchive}
-        archivedTodos={archivedTodos}
-        onAddRequest={() => setIsAddModalOpen(true)}
-      />
+    <GestureWrapper>
+      <View style={styles.container}>
+        <StatusBar barStyle={"light-content"}></StatusBar>
+        <TodoList
+          todos={todos}
+          onDeleteTodo={onDeleteTodo}
+          onCheckTodo={onCheckTodo}
+          onEditTodo={onEditTodo}
+          onArchiveTodo={onArchiveTodo}
+          onArchiveAll={onArchiveAll}
+          onClearArchive={onClearArchive}
+          archivedTodos={archivedTodos}
+          onAddRequest={() => setIsAddModalOpen(true)}
+          categoryTitle={t("tab_todo")}
+          categoryIcon="list"
+        />
 
-      <AddTodoModal
-        isOpen={isAddModalOpen}
-        onClose={() => setIsAddModalOpen(false)}
-        onAdd={handleAddTodo}
-      />
-    </View>
+        <AddTodoModal
+          isOpen={isAddModalOpen}
+          onClose={() => setIsAddModalOpen(false)}
+          onAdd={handleAddTodo}
+          categoryTitle={t("tab_todo")}
+          categoryIcon="list"
+        />
+      </View>
+    </GestureWrapper>
   );
 }
 

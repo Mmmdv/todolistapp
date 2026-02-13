@@ -1,8 +1,8 @@
 import StyledText from "@/components/StyledText";
 import { useTheme } from "@/hooks/useTheme";
-import SettingsModal from "@/layout/Modals/SettingsModal";
 import { Poppins_600SemiBold, useFonts } from '@expo-google-fonts/poppins';
 import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import { Image, Share, StyleSheet, TouchableOpacity, View } from "react-native";
 
@@ -10,7 +10,7 @@ import NotificationsModal from "@/layout/Modals/NotificationsModal";
 
 const Header: React.FC = () => {
   const { colors, t } = useTheme();
-  const [settingsVisible, setSettingsVisible] = useState(false);
+  const router = useRouter();
   const [notificationsVisible, setNotificationsVisible] = useState(false);
 
   let [fontsLoaded] = useFonts({
@@ -46,15 +46,12 @@ const Header: React.FC = () => {
         <TouchableOpacity onPress={() => setNotificationsVisible(true)} activeOpacity={0.7} style={styles.iconButton}>
           <Ionicons name="notifications-outline" size={22} color={colors.PRIMARY_TEXT} />
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => setSettingsVisible(true)} activeOpacity={0.7} style={styles.iconButton}>
+        <TouchableOpacity onPress={() => router.push("/settings")} activeOpacity={0.7} style={styles.iconButton}>
           <Ionicons name="settings-outline" size={22} color={colors.PRIMARY_TEXT} />
         </TouchableOpacity>
       </View>
 
-      <SettingsModal
-        visible={settingsVisible}
-        onClose={() => setSettingsVisible(false)}
-      />
+
       <NotificationsModal
         visible={notificationsVisible}
         onClose={() => setNotificationsVisible(false)}

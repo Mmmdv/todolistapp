@@ -18,6 +18,9 @@ export interface AppState {
     todoNotifications: boolean
     birthdayNotifications: boolean
     movieNotifications: boolean
+    shoppingNotifications: boolean
+    eventsNotifications: boolean
+    expensesNotifications: boolean
     username?: string
     usageStats: Record<string, number>
 }
@@ -29,6 +32,9 @@ const initialState: AppState = {
     todoNotifications: true,
     birthdayNotifications: true,
     movieNotifications: true,
+    shoppingNotifications: true,
+    eventsNotifications: true,
+    expensesNotifications: true,
     username: "",
     usageStats: {
         todo: 0,
@@ -47,6 +53,9 @@ export interface UpdateAppSettingsPayload {
     todoNotifications?: boolean
     birthdayNotifications?: boolean
     movieNotifications?: boolean
+    shoppingNotifications?: boolean
+    eventsNotifications?: boolean
+    expensesNotifications?: boolean
     username?: string
 }
 
@@ -65,6 +74,9 @@ export const appSlice = createSlice({
             if (action.payload.todoNotifications !== undefined) state.todoNotifications = action.payload.todoNotifications
             if (action.payload.birthdayNotifications !== undefined) state.birthdayNotifications = action.payload.birthdayNotifications
             if (action.payload.movieNotifications !== undefined) state.movieNotifications = action.payload.movieNotifications
+            if (action.payload.shoppingNotifications !== undefined) state.shoppingNotifications = action.payload.shoppingNotifications
+            if (action.payload.eventsNotifications !== undefined) state.eventsNotifications = action.payload.eventsNotifications
+            if (action.payload.expensesNotifications !== undefined) state.expensesNotifications = action.payload.expensesNotifications
             if (username !== undefined) state.username = username
         },
         incrementUsage: (state, action: PayloadAction<string>) => {

@@ -7,6 +7,7 @@ export interface Notification {
     date: string;
     read: boolean;
     status?: 'pending' | 'sent' | 'cancelled' | 'updated' | 'changed';
+    categoryIcon?: string;
 }
 
 export interface NotificationState {

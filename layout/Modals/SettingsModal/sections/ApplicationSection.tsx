@@ -55,8 +55,6 @@ const ApplicationSection: React.FC = () => {
 
     return (
         <>
-            <View style={[styles.divider, { backgroundColor: colors.PRIMARY_BORDER_DARK }]} />
-
             <View style={styles.section}>
                 <StyledText style={[styles.sectionTitle, { color: colors.PRIMARY_TEXT }]}>{t("application")}</StyledText>
                 <View style={styles.aboutContainer}>

@@ -19,10 +19,12 @@ type AddTodoModalProps = {
     isOpen: boolean
     onClose: () => void
     onAdd: (title: string, reminder?: string, notificationId?: string) => void
+    categoryTitle?: string
+    categoryIcon?: string
 }
 
 const AddTodoModal: React.FC<AddTodoModalProps> = ({
-    isOpen, onClose, onAdd }) => {
+    isOpen, onClose, onAdd, categoryTitle, categoryIcon }) => {
     const { t, notificationsEnabled, todoNotifications } = useTheme();
     const dispatch = useAppDispatch();
 
@@ -42,13 +44,15 @@ const AddTodoModal: React.FC<AddTodoModalProps> = ({
         let notificationId: string | undefined;
 
         if (finalDate && notificationsEnabled && todoNotifications) {
-            notificationId = await schedulePushNotification(title, t("reminder"), finalDate);
+            const displayTitle = categoryTitle || t("tab_todo");
+            notificationId = await schedulePushNotification(displayTitle, title, finalDate, categoryIcon);
             if (notificationId) {
                 dispatch(addNotification({
                     id: notificationId,
-                    title: t("reminder"),
-                    body: `${t("title")}: ${title}`,
+                    title: displayTitle,
+                    body: title,
                     date: finalDate.toISOString(),
+                    categoryIcon,
                 }));
             }
         }
@@ -240,8 +244,8 @@ const AddTodoModal: React.FC<AddTodoModalProps> = ({
 
                                 <View style={[modalStyles.buttonsContainer, { marginTop: 20 }]}>
                                     <StyledButton
-                                        label={t("cancel")}
-                                        onPress={picker.closePickers}
+                                        label={picker.showTimePicker ? t("back") : t("cancel")}
+                                        onPress={picker.showTimePicker ? picker.goBackToDatePicker : picker.closePickers}
                                         variant="dark_button"
                                         style={{ flex: 1 }}
                                     />
@@ -337,7 +341,7 @@ const AddTodoModal: React.FC<AddTodoModalProps> = ({
                             <View style={modalStyles.buttonsContainer}>
                                 <StyledButton
                                     label={t("close")}
-                                    onPress={() => picker.setShowPastDateAlert(false)}
+                                    onPress={picker.closePastDateAlert}
                                     variant="dark_button"
                                 />
                             </View>

@@ -43,6 +43,7 @@ export const styles = StyleSheet.create({
     },
     notificationItem: {
         flexDirection: "row",
+        alignItems: "center",
         padding: 16,
         borderRadius: 12,
         marginBottom: 12,
@@ -76,8 +77,8 @@ export const styles = StyleSheet.create({
         color: "#888",
     },
     itemBody: {
-        fontSize: 14,
-        lineHeight: 20,
+        fontSize: 15,
+        lineHeight: 22,
     },
     emptyContainer: {
         flex: 1,

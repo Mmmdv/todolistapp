@@ -25,10 +25,12 @@ type EditTodoModalProps = {
     reminder?: string
     notificationId?: string
     reminderCancelled?: boolean
+    categoryTitle?: string
+    categoryIcon?: string
 }
 
 const EditTodoModal: React.FC<EditTodoModalProps> = ({
-    isOpen, onClose, onUpdate, title, reminder, reminderCancelled, notificationId }) => {
+    isOpen, onClose, onUpdate, title, reminder, reminderCancelled, notificationId, categoryTitle, categoryIcon }) => {
     const { t, colors, notificationsEnabled, todoNotifications } = useTheme();
     const dispatch = useAppDispatch();
 
@@ -87,16 +89,18 @@ const EditTodoModal: React.FC<EditTodoModalProps> = ({
         }
 
         if (picker.reminderDate && notificationsEnabled && todoNotifications) {
-            const newId = await schedulePushNotification(updatedTitle, t("reminder"), picker.reminderDate);
+            const displayTitle = categoryTitle || t("tab_todo");
+            const newId = await schedulePushNotification(displayTitle, updatedTitle, picker.reminderDate, categoryIcon);
             newNotificationId = newId;
 
             if (newId) {
                 dispatch(addNotification({
                     id: newId,
-                    title: t("reminder"),
-                    body: `${t("title")}: ${updatedTitle}`,
+                    title: displayTitle,
+                    body: updatedTitle,
                     date: picker.reminderDate.toISOString(),
-                    status: 'pending'
+                    status: 'pending',
+                    categoryIcon,
                 }));
             }
         }
@@ -258,8 +262,8 @@ const EditTodoModal: React.FC<EditTodoModalProps> = ({
 
                             <View style={[modalStyles.buttonsContainer, { marginTop: 20 }]}>
                                 <StyledButton
-                                    label={t("cancel")}
-                                    onPress={picker.closePickers}
+                                    label={picker.showTimePicker ? t("back") : t("cancel")}
+                                    onPress={picker.showTimePicker ? picker.goBackToDatePicker : picker.closePickers}
                                     variant="dark_button"
                                     style={{ flex: 1 }}
                                 />
@@ -355,7 +359,7 @@ const EditTodoModal: React.FC<EditTodoModalProps> = ({
                         <View style={modalStyles.buttonsContainer}>
                             <StyledButton
                                 label={t("close")}
-                                onPress={() => picker.setShowPastDateAlert(false)}
+                                onPress={picker.closePastDateAlert}
                                 variant="dark_button"
                             />
                         </View>

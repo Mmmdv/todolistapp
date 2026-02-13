@@ -21,11 +21,13 @@ type TodoItemProps = Todo & {
     deleteTodo: (id: Todo["id"]) => void
     editTodo: (id: Todo["id"], title: Todo["title"], reminder?: string, notificationId?: string) => void
     archiveTodo?: (id: Todo["id"]) => void
+    categoryTitle?: string
+    categoryIcon?: string
 }
 
 import { useTheme } from "@/hooks/useTheme"
 
-const TodoItem: React.FC<TodoItemProps> = ({ id, title, isCompleted, isArchived, createdAt, completedAt, updatedAt, archivedAt, reminder, reminderCancelled, notificationId, checkTodo, deleteTodo, editTodo, archiveTodo }) => {
+const TodoItem: React.FC<TodoItemProps> = ({ id, title, isCompleted, isArchived, createdAt, completedAt, updatedAt, archivedAt, reminder, reminderCancelled, notificationId, checkTodo, deleteTodo, editTodo, archiveTodo, categoryTitle, categoryIcon }) => {
     const { t, notificationsEnabled } = useTheme();
     const [isEditModalOpen, setIsEditModalOpen] = useState(false)
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
@@ -114,27 +116,20 @@ const TodoItem: React.FC<TodoItemProps> = ({ id, title, isCompleted, isArchived,
                     onLongPress={handleCheckToken}
                     activeOpacity={0.7}
                 >
-                    <View style={{ position: 'relative', alignSelf: 'flex-start' }}>
+                    <View style={{ flex: 1 }}>
                         <StyledText
-                            numberOfLines={1}
-                            ellipsizeMode="tail"
                             style={[{
-                                fontSize: 16,
-                                flexShrink: 1,
-                                opacity: isArchived ? 0.9 : (isCompleted ? 0.7 : 1),
+                                fontSize: 14,
+                                opacity: isArchived ? 0.9 : (isCompleted ? 0.6 : 1),
+                                textDecorationLine: (isCompleted && !isArchived) ? 'line-through' : 'none',
+                                color: (isCompleted && !isArchived) ? COLORS.PLACEHOLDER : COLORS.PRIMARY_TEXT,
                             }]}>
                             {title}
                         </StyledText>
-                        {isCompleted && !isArchived && (
-                            <View style={{
-                                position: 'absolute', left: 0, right: 0, top: '50%',
-                                height: 1, backgroundColor: COLORS.PRIMARY_TEXT, opacity: 0.4,
-                            }} />
-                        )}
                     </View>
                     {!isCompleted && createdAt && !updatedAt && (
                         <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 2, gap: 4 }}>
-                            <Ionicons name="add-circle" size={14} color="#eceaeaff" />
+                            <Ionicons name="add" size={14} color="#50dce0ff" />
                             <StyledText style={[styles.dateText, { fontSize: 12, marginTop: 0 }]}>
                                 {formatDate(createdAt)}
                             </StyledText>
@@ -165,7 +160,7 @@ const TodoItem: React.FC<TodoItemProps> = ({ id, title, isCompleted, isArchived,
                             />
                             <StyledText style={{
                                 color: (notificationsEnabled && !reminderCancelled) ? '#FFD166' : "#888",
-                                fontSize: 14,
+                                fontSize: 12,
                                 textDecorationLine: (notificationsEnabled && !reminderCancelled) ? 'none' : 'line-through'
                             }}>
                                 {formatDate(reminder)}
@@ -188,6 +183,7 @@ const TodoItem: React.FC<TodoItemProps> = ({ id, title, isCompleted, isArchived,
                             reminder={reminder}
                             reminderCancelled={reminderCancelled}
                             notificationId={notificationId}
+                            categoryTitle={categoryTitle}
                         />
                         <TouchableOpacity onPress={onPressDelete} activeOpacity={0.7}>
                             <Ionicons name="trash-outline" size={24} color={COLORS.PRIMARY_TEXT} />

@@ -4,7 +4,18 @@ import { useAppSelector } from "@/store";
 import { selectAppSettings, Theme } from "@/store/slices/appSlice";
 
 export const useTheme = () => {
-    const { theme, lang, notificationsEnabled, todoNotifications, birthdayNotifications, movieNotifications, username } = useAppSelector(selectAppSettings);
+    const {
+        theme,
+        lang,
+        notificationsEnabled,
+        todoNotifications,
+        birthdayNotifications,
+        movieNotifications,
+        shoppingNotifications,
+        eventsNotifications,
+        expensesNotifications,
+        username
+    } = useAppSelector(selectAppSettings);
 
     const colors = theme === Theme.DARK ? DarkTheme : LightTheme;
     const isDark = theme === Theme.DARK;
@@ -23,6 +34,9 @@ export const useTheme = () => {
         todoNotifications,
         birthdayNotifications,
         movieNotifications,
+        shoppingNotifications,
+        eventsNotifications,
+        expensesNotifications,
         username
     };
 };

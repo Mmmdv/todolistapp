@@ -65,7 +65,6 @@ const NotificationsModal: React.FC<NotificationsModalProps> = ({ visible, onClos
         }
 
         const isUnread = !item.read;
-        const cleanBody = item.body.replace(/^(Title|Başlıq|Заголовок): /i, "");
 
         return (
             <TouchableOpacity
@@ -84,18 +83,8 @@ const NotificationsModal: React.FC<NotificationsModalProps> = ({ visible, onClos
                     }
                 ]}
             >
-                <View style={[
-                    styles.iconContainer,
-                    {
-                        backgroundColor: statusBg,
-                        shadowColor: statusColor,
-                        shadowOffset: { width: 0, height: 4 },
-                        shadowOpacity: 0.5,
-                        shadowRadius: 8,
-                        elevation: 8
-                    }
-                ]}>
-                    <Ionicons name={statusIcon} size={20} color={statusColor} />
+                <View style={{ width: 32, alignItems: 'center' }}>
+                    <Ionicons name={(item.categoryIcon as any) || "notifications-outline"} size={26} color={statusColor} />
                 </View>
                 <View style={styles.contentContainer}>
                     <View style={styles.itemHeader}>
@@ -106,28 +95,40 @@ const NotificationsModal: React.FC<NotificationsModalProps> = ({ visible, onClos
                                 fontWeight: isUnread ? "700" : "600",
                                 fontSize: 16
                             }
-                        ]}>{cleanBody}</StyledText>
+                        ]}>{item.title}</StyledText>
                     </View>
+                    <StyledText style={[
+                        styles.itemBody,
+                        {
+                            color: colors.PRIMARY_TEXT,
+                            opacity: 0.8,
+                            marginBottom: 4
+                        }
+                    ]}>{item.body}</StyledText>
                     <StyledText style={styles.itemDate}>
                         {new Date(item.date).toLocaleDateString()} {new Date(item.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </StyledText>
                     {item.status === 'cancelled' && (
-                        <View style={{ marginTop: 4 }}>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 4 }}>
+                            <Ionicons name="close-circle-outline" size={14} color={colors.ERROR_INPUT_TEXT} />
                             <StyledText style={{ fontSize: 12, color: colors.ERROR_INPUT_TEXT, fontWeight: "600" }}>{t("canceled")}</StyledText>
                         </View>
                     )}
                     {item.status === 'changed' && (
-                        <View style={{ marginTop: 4 }}>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 4 }}>
+                            <Ionicons name="create-outline" size={14} color="#5BC0EB" />
                             <StyledText style={{ fontSize: 12, color: "#5BC0EB", fontWeight: "600" }}>{t("changed_status")}</StyledText>
                         </View>
                     )}
                     {item.status !== 'cancelled' && item.status !== 'changed' && isPending && (
-                        <View style={{ marginTop: 4 }}>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 4 }}>
+                            <Ionicons name="hourglass-outline" size={14} color="#FFB74D" />
                             <StyledText style={{ fontSize: 12, color: "#FFB74D", fontWeight: "600" }}>{t("pending")}</StyledText>
                         </View>
                     )}
                     {item.status !== 'cancelled' && item.status !== 'changed' && !isPending && (
-                        <View style={{ marginTop: 4 }}>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 4 }}>
+                            <Ionicons name="checkmark-done-circle-outline" size={14} color={colors.CHECKBOX_SUCCESS} />
                             <StyledText style={{ fontSize: 12, color: colors.CHECKBOX_SUCCESS, fontWeight: "600" }}>{t("sent")}</StyledText>
                         </View>
                     )}

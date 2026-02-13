@@ -1,16 +1,17 @@
+import CustomSwitch from "@/components/CustomSwitch";
 import StyledButton from "@/components/StyledButton";
 import StyledModal from "@/components/StyledModal";
 import StyledText from "@/components/StyledText";
 import { modalStyles } from "@/constants/modalStyles";
 import { useTheme } from "@/hooks/useTheme";
 import { useAppDispatch, useAppSelector } from "@/store";
-import { updateAppSetting } from "@/store/slices/appSlice";
+import { updateAppSetting, UpdateAppSettingsPayload } from "@/store/slices/appSlice";
 import { cancelAllNotifications } from "@/store/slices/notificationSlice";
 import { cancelAllReminders, selectTodos } from "@/store/slices/todoSlice";
 import { Ionicons } from "@expo/vector-icons";
 import * as Notifications from "expo-notifications";
 import React from "react";
-import { LayoutAnimation, Linking, Platform, Switch, UIManager, View } from "react-native";
+import { LayoutAnimation, Linking, Platform, TouchableOpacity, UIManager, View } from "react-native";
 import { styles } from "../styles";
 
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
@@ -22,12 +23,23 @@ interface NotificationSectionProps {
 }
 
 const NotificationSection: React.FC<NotificationSectionProps> = ({ visible }) => {
-    const { colors, t, notificationsEnabled, todoNotifications, birthdayNotifications, movieNotifications } = useTheme();
+    const {
+        colors,
+        t,
+        notificationsEnabled,
+        todoNotifications,
+        birthdayNotifications,
+        movieNotifications,
+        shoppingNotifications,
+        eventsNotifications,
+        expensesNotifications
+    } = useTheme();
     const dispatch = useAppDispatch();
     const todos = useAppSelector(selectTodos);
 
     const [isLoadingNotifications, setIsLoadingNotifications] = React.useState(false);
     const [isConfirmDisableOpen, setIsConfirmDisableOpen] = React.useState(false);
+    const [isManageModalOpen, setIsManageModalOpen] = React.useState(false);
 
     React.useEffect(() => {
         if (visible) {
@@ -85,22 +97,17 @@ const NotificationSection: React.FC<NotificationSectionProps> = ({ visible }) =>
         setIsConfirmDisableOpen(false);
     };
 
-    const toggleTodoNotifications = (value: boolean) => {
-        dispatch(updateAppSetting({ todoNotifications: value }));
-    };
-
-    const toggleBirthdayNotifications = (value: boolean) => {
-        dispatch(updateAppSetting({ birthdayNotifications: value }));
-    };
-
-    const toggleMovieNotifications = (value: boolean) => {
-        dispatch(updateAppSetting({ movieNotifications: value }));
+    const toggleNotificationCategory = (key: keyof UpdateAppSettingsPayload, value: boolean) => {
+        dispatch(updateAppSetting({ [key]: value }));
     };
 
     const subSwitches = [
-        { icon: "list" as const, label: t("notifications_todo"), value: todoNotifications ?? true, onToggle: toggleTodoNotifications },
-        { icon: "gift" as const, label: t("notifications_birthday"), value: birthdayNotifications ?? true, onToggle: toggleBirthdayNotifications },
-        { icon: "videocam" as const, label: t("notifications_movie"), value: movieNotifications ?? true, onToggle: toggleMovieNotifications },
+        { key: 'todoNotifications', icon: "list" as const, label: t("notifications_todo"), value: todoNotifications ?? true },
+        { key: 'birthdayNotifications', icon: "gift" as const, label: t("notifications_birthday"), value: birthdayNotifications ?? true },
+        { key: 'movieNotifications', icon: "videocam" as const, label: t("notifications_movie"), value: movieNotifications ?? true },
+        { key: 'shoppingNotifications', icon: "cart" as const, label: t("notifications_shopping"), value: shoppingNotifications ?? true },
+        { key: 'eventsNotifications', icon: "ticket" as const, label: t("notifications_events"), value: eventsNotifications ?? true },
+        { key: 'expensesNotifications', icon: "wallet" as const, label: t("notifications_expenses"), value: expensesNotifications ?? true },
     ];
 
     return (
@@ -108,54 +115,84 @@ const NotificationSection: React.FC<NotificationSectionProps> = ({ visible }) =>
             <View style={styles.section}>
                 <StyledText style={[styles.sectionTitle, { color: colors.PRIMARY_TEXT }]}>{t("notifications")}</StyledText>
                 <View style={styles.aboutContainer}>
-                    <View style={[styles.aboutRow, { borderColor: colors.PRIMARY_BORDER_DARK, borderBottomWidth: 0 }]}>
+                    <View style={[styles.aboutRow, { borderColor: colors.PRIMARY_BORDER_DARK, borderBottomWidth: notificationsEnabled ? 1 : 0 }]}>
                         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
                             <Ionicons name="notifications" size={20} color={notificationsEnabled ? colors.CHECKBOX_SUCCESS : "#888"} />
                             <StyledText style={[styles.aboutLabel, { color: colors.PRIMARY_TEXT }]}>{t("enable_notifications")}</StyledText>
                         </View>
-                        <Switch
-                            trackColor={{ false: "#767577", true: colors.CHECKBOX_SUCCESS }}
-                            thumbColor={"#f4f3f4"}
-                            ios_backgroundColor="#3e3e3e"
+                        <CustomSwitch
                             onValueChange={handleNotificationToggle}
                             value={notificationsEnabled ?? false}
                         />
                     </View>
 
                     {notificationsEnabled && (
-                        <View style={{
-                            borderRadius: 12,
-                            marginHorizontal: 4,
-                            marginBottom: 0,
-                            marginTop: 0,
-                            paddingVertical: 4
-                        }}>
-                            {subSwitches.map((item, index) => (
-                                <View
-                                    key={item.icon}
-                                    style={[styles.aboutRow, {
-                                        borderBottomWidth: index < subSwitches.length - 1 ? 1 : 0,
-                                        borderColor: colors.PRIMARY_BORDER_DARK,
-                                        paddingHorizontal: 12
-                                    }]}
-                                >
-                                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                                        <Ionicons name={item.icon} size={18} color={colors.PRIMARY_TEXT} style={{ opacity: 0.7 }} />
-                                        <StyledText style={[styles.aboutLabel, { color: colors.PRIMARY_TEXT, fontSize: 15 }]}>{item.label}</StyledText>
-                                    </View>
-                                    <Switch
-                                        trackColor={{ false: "#767577", true: colors.CHECKBOX_SUCCESS }}
-                                        thumbColor={"#f4f3f4"}
-                                        ios_backgroundColor="#3e3e3e"
-                                        onValueChange={item.onToggle}
-                                        value={item.value}
-                                    />
-                                </View>
-                            ))}
-                        </View>
+                        <TouchableOpacity
+                            style={[styles.aboutRow, { borderColor: colors.PRIMARY_BORDER_DARK, borderBottomWidth: 0 }]}
+                            onPress={() => setIsManageModalOpen(true)}
+                        >
+                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                                <Ionicons name="options-outline" size={20} color={colors.PLACEHOLDER} />
+                                <StyledText style={[styles.aboutLabel, { color: colors.PRIMARY_TEXT }]}>{t("manage_notification_categories")}</StyledText>
+                            </View>
+                            <Ionicons name="chevron-forward" size={20} color={colors.PLACEHOLDER} />
+                        </TouchableOpacity>
                     )}
                 </View>
             </View>
+
+            {/* Manage Notification Categories Modal */}
+            <StyledModal isOpen={isManageModalOpen} onClose={() => setIsManageModalOpen(false)}>
+                <View style={[modalStyles.modalContainer, { width: '100%', paddingHorizontal: 0 }]}>
+                    <View style={[modalStyles.iconContainer, {
+                        backgroundColor: colors.SECONDARY_BACKGROUND,
+                        shadowColor: colors.CHECKBOX_SUCCESS,
+                        shadowOffset: { width: 0, height: 4 },
+                        shadowOpacity: 0.3,
+                        shadowRadius: 8,
+                        elevation: 5,
+                        marginBottom: 10
+                    }]}>
+                        <Ionicons name="notifications" size={28} color={colors.CHECKBOX_SUCCESS} />
+                    </View>
+
+                    <StyledText style={modalStyles.headerText}>{t("manage_notification_categories")}</StyledText>
+
+                    <View style={[modalStyles.divider, { marginVertical: 15 }]} />
+
+                    <View style={{ width: '100%', paddingHorizontal: 20 }}>
+                        {subSwitches.map((item, index) => (
+                            <View
+                                key={item.key}
+                                style={[styles.aboutRow, {
+                                    borderBottomWidth: index < subSwitches.length - 1 ? 1 : 0,
+                                    borderColor: colors.PRIMARY_BORDER_DARK,
+                                    paddingVertical: 14,
+                                    paddingHorizontal: 0
+                                }]}
+                            >
+                                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                                    <Ionicons name={item.icon} size={20} color={colors.PRIMARY_TEXT} style={{ opacity: 0.7 }} />
+                                    <StyledText style={[styles.aboutLabel, { color: colors.PRIMARY_TEXT, fontSize: 16 }]}>{item.label}</StyledText>
+                                </View>
+                                <CustomSwitch
+                                    onValueChange={(value) => toggleNotificationCategory(item.key as any, value)}
+                                    value={item.value}
+                                />
+                            </View>
+                        ))}
+                    </View>
+
+                    <View style={[modalStyles.buttonsContainer, { paddingHorizontal: 20, marginTop: 20 }]}>
+                        <StyledButton
+                            label={t("close")}
+                            onPress={() => setIsManageModalOpen(false)}
+                            variant="dark_button"
+                            style={{ width: '100%' }}
+                        />
+                    </View>
+                </View>
+            </StyledModal>
 
             {/* Notification Disable Confirmation Modal */}
             <StyledModal isOpen={isConfirmDisableOpen} onClose={() => setIsConfirmDisableOpen(false)}>

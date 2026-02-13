@@ -22,9 +22,11 @@ type TodoListProps = {
     onClearArchive: () => void
     archivedTodos: Todo[]
     onAddRequest?: () => void
+    categoryTitle?: string
+    categoryIcon?: string
 }
 
-const TodoList: React.FC<TodoListProps> = ({ todos, onDeleteTodo, onCheckTodo, onEditTodo, onArchiveTodo, onClearArchive, archivedTodos, onArchiveAll, onAddRequest }) => {
+const TodoList: React.FC<TodoListProps> = ({ todos, onDeleteTodo, onCheckTodo, onEditTodo, onArchiveTodo, onClearArchive, archivedTodos, onArchiveAll, onAddRequest, categoryTitle, categoryIcon }) => {
     const { colors, t } = useTheme()
     const [todoSortBy, setTodoSortBy] = useState<SortBy>("date")
     const [todoSortOrder, setTodoSortOrder] = useState<SortOrder>("desc")
@@ -256,7 +258,7 @@ const TodoList: React.FC<TodoListProps> = ({ todos, onDeleteTodo, onCheckTodo, o
                         disabled={sortedPendingTodos.length === 0}
                     >
                         <View style={[styles.sectionTitleContainer, sortedPendingTodos.length === 0 && { opacity: 0.5 }]}>
-                            <Ionicons name="list-circle" size={24} color="#5BC0EB" />
+                            <Ionicons name="list" size={24} color="#5BC0EB" />
                             <StyledText style={[styles.sectionTitle, { color: colors.PRIMARY_TEXT }]}>
                                 {t("todo")} ({sortedPendingTodos.length})
                             </StyledText>
@@ -267,7 +269,7 @@ const TodoList: React.FC<TodoListProps> = ({ todos, onDeleteTodo, onCheckTodo, o
                                 style={{ marginRight: 10 }}
                                 activeOpacity={0.7}
                             >
-                                <Ionicons name="add-circle" size={28} color={colors.CHECKBOX_SUCCESS} />
+                                <Ionicons name="add" size={28} color={colors.CHECKBOX_SUCCESS} />
                             </TouchableOpacity>
 
                             {todoExpanded && sortedPendingTodos.length > 0 && (
@@ -300,6 +302,8 @@ const TodoList: React.FC<TodoListProps> = ({ todos, onDeleteTodo, onCheckTodo, o
                             editTodo={onEditTodo}
                             reminder={item.reminder}
                             reminderCancelled={item.reminderCancelled}
+                            categoryTitle={categoryTitle}
+                            categoryIcon={categoryIcon}
                         />
                     ))}
                 </View>
@@ -314,7 +318,7 @@ const TodoList: React.FC<TodoListProps> = ({ todos, onDeleteTodo, onCheckTodo, o
                         disabled={sortedCompletedTodos.length === 0}
                     >
                         <View style={styles.sectionTitleContainer}>
-                            <Ionicons name="checkmark-done-circle" size={24} color={colors.CHECKBOX_SUCCESS} />
+                            <Ionicons name="checkbox" size={24} color={colors.CHECKBOX_SUCCESS} />
                             <StyledText style={[styles.sectionTitle, { color: colors.PRIMARY_TEXT }]}>{t("done")} ({sortedCompletedTodos.length})</StyledText>
                         </View>
                         <View style={styles.sectionControls}>
@@ -347,6 +351,8 @@ const TodoList: React.FC<TodoListProps> = ({ todos, onDeleteTodo, onCheckTodo, o
                             checkTodo={onCheckTodo}
                             editTodo={onEditTodo}
                             archiveTodo={onArchiveTodo}
+                            categoryTitle={categoryTitle}
+                            categoryIcon={categoryIcon}
                         />
                     ))}
                 </View>
@@ -406,6 +412,8 @@ const TodoList: React.FC<TodoListProps> = ({ todos, onDeleteTodo, onCheckTodo, o
                             checkTodo={onCheckTodo}
                             editTodo={onEditTodo}
                             archiveTodo={onArchiveTodo}
+                            categoryTitle={categoryTitle}
+                            categoryIcon={categoryIcon}
                         />
                     ))}
                 </View>
