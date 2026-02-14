@@ -1,5 +1,5 @@
 import { useAppDispatch, useAppSelector } from "@/store";
-import { deleteNotification } from "@/store/slices/notificationSlice";
+import { updateNotificationStatus } from "@/store/slices/notificationSlice";
 import { addTodo, archiveAllTodos, archiveTodo, checkTodo, clearArchive, deleteTodo, editTodo, selectTodos } from "@/store/slices/todoSlice";
 import { Todo } from "@/types/todo";
 import * as Notifications from 'expo-notifications';
@@ -12,6 +12,8 @@ const generateId = (): string => {
 const useTodo = () => {
     const todos = useAppSelector(selectTodos);
     const dispatch = useAppDispatch();
+
+    const notifications = useAppSelector(state => state.notification.notifications);
 
     const onAddTodo = (title: Todo["title"], reminder?: string, notificationId?: string) => {
         dispatch(addTodo({
@@ -26,9 +28,16 @@ const useTodo = () => {
 
     const onDeleteTodo = async (id: Todo["id"]) => {
         const todo = todos.find(t => t.id === id);
-        if (todo && todo.notificationId && !todo.isCompleted) {
-            await Notifications.cancelScheduledNotificationAsync(todo.notificationId);
-            dispatch(deleteNotification(todo.notificationId));
+        if (todo && todo.notificationId) {
+            const notification = notifications.find(n => n.id === todo.notificationId);
+            if (notification && notification.status === 'Gözlənilir') {
+                try {
+                    await Notifications.cancelScheduledNotificationAsync(todo.notificationId);
+                } catch (error) {
+                    // silently ignore
+                }
+                dispatch(updateNotificationStatus({ id: todo.notificationId, status: 'Ləğv olunub' }));
+            }
         }
         dispatch(deleteTodo(id))
     }
@@ -40,14 +49,34 @@ const useTodo = () => {
     const onCheckTodo = async (id: Todo["id"]) => {
         const todo = todos.find(t => t.id === id);
         if (todo && !todo.isCompleted && todo.notificationId) {
-
-            await Notifications.cancelScheduledNotificationAsync(todo.notificationId);
-            dispatch(deleteNotification(todo.notificationId));
+            const notification = notifications.find(n => n.id === todo.notificationId);
+            if (notification && notification.status === 'Gözlənilir') {
+                try {
+                    await Notifications.cancelScheduledNotificationAsync(todo.notificationId);
+                } catch (error) {
+                    // silently ignore
+                }
+                // Instead of deleting, mark as cancelled so it stays in history as 'Ləğv olunub'
+                dispatch(updateNotificationStatus({ id: todo.notificationId, status: 'Ləğv olunub' }));
+            }
+            // If notification is 'Göndərilib', we do nothing, it stays in history as 'Göndərilib'
         }
         dispatch(checkTodo(id))
     }
 
-    const onArchiveTodo = (id: Todo["id"]) => {
+    const onArchiveTodo = async (id: Todo["id"]) => {
+        const todo = todos.find(t => t.id === id);
+        if (todo && todo.notificationId) {
+            const notification = notifications.find(n => n.id === todo.notificationId);
+            if (notification && notification.status === 'Gözlənilir') {
+                try {
+                    await Notifications.cancelScheduledNotificationAsync(todo.notificationId);
+                } catch (error) {
+                    // silently ignore
+                }
+                dispatch(updateNotificationStatus({ id: todo.notificationId, status: 'Ləğv olunub' }));
+            }
+        }
         dispatch(archiveTodo(id))
     }
 
@@ -56,7 +85,21 @@ const useTodo = () => {
     }
 
 
-    const onClearArchive = () => {
+    const onClearArchive = async () => {
+        const archivedTodos = todos.filter(t => t.isArchived);
+        for (const todo of archivedTodos) {
+            if (todo.notificationId) {
+                const notification = notifications.find(n => n.id === todo.notificationId);
+                if (notification && notification.status === 'Gözlənilir') {
+                    try {
+                        await Notifications.cancelScheduledNotificationAsync(todo.notificationId);
+                    } catch (error) {
+                        // silently ignore
+                    }
+                    dispatch(updateNotificationStatus({ id: todo.notificationId, status: 'Ləğv olunub' }));
+                }
+            }
+        }
         dispatch(clearArchive())
     }
 

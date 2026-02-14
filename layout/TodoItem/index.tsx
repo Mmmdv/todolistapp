@@ -14,6 +14,9 @@ import ViewTodoModal from "../Modals/ViewTodoModal.tsx"
 import CelebrationEffect, { CelebrationType, createCelebrationAnimations, playCelebration } from "./CelebrationEffect"
 import { styles } from "./styles"
 
+import { useAppSelector } from "@/store"
+import { selectNotificationById } from "@/store/slices/notificationSlice"
+
 type TodoItemProps = Todo & {
     reminder?: string;
     reminderCancelled?: boolean;
@@ -29,6 +32,11 @@ import { useTheme } from "@/hooks/useTheme"
 
 const TodoItem: React.FC<TodoItemProps> = ({ id, title, isCompleted, isArchived, createdAt, completedAt, updatedAt, archivedAt, reminder, reminderCancelled, notificationId, checkTodo, deleteTodo, editTodo, archiveTodo, categoryTitle, categoryIcon }) => {
     const { t, notificationsEnabled } = useTheme();
+
+    // Look up status from notification history centralized data
+    const notification = useAppSelector(state => notificationId ? selectNotificationById(state, notificationId) : undefined);
+    const reminderStatus = notification?.status;
+
     const [isEditModalOpen, setIsEditModalOpen] = useState(false)
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
     const [isArchiveModalOpen, setIsArchiveModalOpen] = useState(false)
@@ -130,7 +138,7 @@ const TodoItem: React.FC<TodoItemProps> = ({ id, title, isCompleted, isArchived,
                     {!isCompleted && createdAt && !updatedAt && (
                         <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 2, gap: 4 }}>
                             <Ionicons name="add" size={14} color="#50dce0ff" />
-                            <StyledText style={[styles.dateText, { fontSize: 12, marginTop: 0 }]}>
+                            <StyledText style={[styles.dateText, { fontSize: 11, marginTop: 0 }]}>
                                 {formatDate(createdAt)}
                             </StyledText>
                         </View>
@@ -138,7 +146,7 @@ const TodoItem: React.FC<TodoItemProps> = ({ id, title, isCompleted, isArchived,
                     {!isCompleted && updatedAt && (
                         <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 2, gap: 4 }}>
                             <Ionicons name="create-outline" size={14} color="#5BC0EB" />
-                            <StyledText style={[styles.dateText, { color: '#5BC0EB', fontSize: 12, marginTop: 0 }]}>
+                            <StyledText style={[styles.dateText, { color: '#5BC0EB', fontSize: 11, marginTop: 0 }]}>
                                 {formatDate(updatedAt)}
                             </StyledText>
                         </View>
@@ -146,25 +154,39 @@ const TodoItem: React.FC<TodoItemProps> = ({ id, title, isCompleted, isArchived,
                     {isCompleted && !isArchived && completedAt && (
                         <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 2, gap: 4 }}>
                             <Ionicons name="checkmark-done-outline" size={14} color="#69c4dbe8" />
-                            <StyledText style={{ color: '#69c4dbe8', fontSize: 12 }}>
+                            <StyledText style={{ color: '#69c4dbe8', fontSize: 11 }}>
                                 {formatDate(completedAt)}
                             </StyledText>
                         </View>
                     )}
-                    {!isCompleted && !isArchived && reminder && new Date(reminder) > new Date() && (
-                        <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 2, gap: 4 }}>
-                            <Ionicons
-                                name={(notificationsEnabled && !reminderCancelled) ? "alarm-outline" : "notifications-off-outline"}
-                                size={14}
-                                color={(notificationsEnabled && !reminderCancelled) ? "#FFD166" : "#888"}
-                            />
-                            <StyledText style={{
-                                color: (notificationsEnabled && !reminderCancelled) ? '#FFD166' : "#888",
-                                fontSize: 12,
-                                textDecorationLine: (notificationsEnabled && !reminderCancelled) ? 'none' : 'line-through'
-                            }}>
-                                {formatDate(reminder)}
-                            </StyledText>
+                    {!isCompleted && !isArchived && reminder && (
+                        <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 2, gap: 10 }}>
+                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                                <Ionicons
+                                    name="alarm-outline"
+                                    size={14}
+                                    color="#FFD166"
+                                />
+                                <StyledText style={{
+                                    color: "#FFD166",
+                                    fontSize: 11,
+                                    textDecorationLine: (reminderStatus === 'Ləğv olunub' || reminderStatus === 'Dəyişdirilib və ləğv olunub' || reminderCancelled) ? 'line-through' : 'none'
+                                }}>
+                                    {formatDate(reminder)}
+                                </StyledText>
+                            </View>
+
+                            {reminderStatus && (
+                                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                                    {reminderStatus === 'Ləğv olunub' || reminderStatus === 'Dəyişdirilib və ləğv olunub' || reminderCancelled ? (
+                                        <Ionicons name="notifications-off" size={14} color={COLORS.ERROR_INPUT_TEXT} />
+                                    ) : reminderStatus === 'Göndərilib' ? (
+                                        <Ionicons name="checkmark-done-circle-outline" size={14} color={COLORS.CHECKBOX_SUCCESS} />
+                                    ) : (
+                                        <Ionicons name="hourglass-outline" size={14} color="#FFB74D" />
+                                    )}
+                                </View>
+                            )}
                         </View>
                     )}
                 </TouchableOpacity>
@@ -184,6 +206,7 @@ const TodoItem: React.FC<TodoItemProps> = ({ id, title, isCompleted, isArchived,
                             reminderCancelled={reminderCancelled}
                             notificationId={notificationId}
                             categoryTitle={categoryTitle}
+                            categoryIcon={categoryIcon}
                         />
                         <TouchableOpacity onPress={onPressDelete} activeOpacity={0.7}>
                             <Ionicons name="trash-outline" size={24} color={COLORS.PRIMARY_TEXT} />
@@ -221,6 +244,7 @@ const TodoItem: React.FC<TodoItemProps> = ({ id, title, isCompleted, isArchived,
                     completedAt={completedAt}
                     reminder={reminder}
                     reminderCancelled={reminderCancelled}
+                    notificationId={notificationId}
                 />
             </View>
         </Animated.View>

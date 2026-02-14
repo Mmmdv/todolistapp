@@ -5,6 +5,8 @@ import { modalStyles } from "@/constants/modalStyles";
 import { COLORS } from "@/constants/ui";
 import { formatDate, formatDuration } from "@/helpers/date";
 import { useTheme } from "@/hooks/useTheme";
+import { useAppSelector } from "@/store";
+import { NotificationStatus, selectNotificationById } from "@/store/slices/notificationSlice";
 import { Todo } from "@/types/todo";
 import { Ionicons } from "@expo/vector-icons";
 import { StyleSheet, View } from "react-native";
@@ -18,6 +20,7 @@ type ViewTodoModalProps = {
     completedAt?: Todo["completedAt"]
     reminder?: string
     reminderCancelled?: boolean
+    notificationId?: string
 };
 
 const ViewTodoModal: React.FC<ViewTodoModalProps> = ({
@@ -28,9 +31,13 @@ const ViewTodoModal: React.FC<ViewTodoModalProps> = ({
     updatedAt,
     completedAt,
     reminder,
-    reminderCancelled
+    reminderCancelled,
+    notificationId
 }) => {
     const { t } = useTheme();
+
+    const notification = useAppSelector(state => notificationId ? selectNotificationById(state, notificationId) : undefined);
+    const reminderStatus: NotificationStatus | undefined = notification?.status;
 
     return (
         <StyledModal isOpen={isOpen} onClose={onClose}>
@@ -120,12 +127,12 @@ const ViewTodoModal: React.FC<ViewTodoModalProps> = ({
                             </View>
                             <View style={localStyles.tableValueColumn}>
                                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                                    {reminderCancelled ? (
-                                        <Ionicons name="close-circle-outline" size={14} color={COLORS.ERROR_INPUT_TEXT} />
-                                    ) : new Date(reminder) > new Date() ? (
-                                        <Ionicons name="hourglass-outline" size={14} color="#FFB74D" />
-                                    ) : (
+                                    {reminderStatus === 'Göndərilib' ? (
                                         <Ionicons name="checkmark-done-circle-outline" size={14} color={COLORS.CHECKBOX_SUCCESS} />
+                                    ) : (reminderStatus === 'Ləğv olunub' || reminderStatus === 'Dəyişdirilib və ləğv olunub' || reminderCancelled || completedAt) ? (
+                                        <Ionicons name="notifications-off" size={14} color={COLORS.ERROR_INPUT_TEXT} />
+                                    ) : (
+                                        <Ionicons name="hourglass-outline" size={14} color="#FFB74D" />
                                     )}
                                     <StyledText style={[localStyles.tableValueText, { color: '#FFD166' }]}>
                                         {formatDate(reminder)}
@@ -232,20 +239,18 @@ const localStyles = StyleSheet.create({
         borderRadius: 8,
         backgroundColor: 'rgba(255,255,255,0.05)',
     },
-    statusTextCancelled: {
+    statusTextGeneric: {
         fontSize: 10,
-        color: COLORS.ERROR_INPUT_TEXT,
         fontWeight: 'bold',
+    },
+    statusTextCancelled: {
+        color: COLORS.ERROR_INPUT_TEXT,
     },
     statusTextPending: {
-        fontSize: 10,
         color: "#FFB74D",
-        fontWeight: 'bold',
     },
     statusTextSent: {
-        fontSize: 10,
         color: COLORS.CHECKBOX_SUCCESS,
-        fontWeight: 'bold',
     },
     statusRow: {
         flexDirection: 'row',

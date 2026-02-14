@@ -17,8 +17,7 @@ export const todoSlice = createSlice({
             state: TodoState,
             action: PayloadAction<Todo>,
         ) => {
-            const todo = action.payload;
-            state.todos.push(todo);
+            state.todos.push(action.payload);
         },
         deleteTodo: (
             state: TodoState,
@@ -43,11 +42,9 @@ export const todoSlice = createSlice({
                     ...todo,
                     title,
                     reminder,
-                    // Update notificationId if provided
                     notificationId: notificationId !== undefined ? notificationId : todo.notificationId,
                     updatedAt: new Date().toISOString(),
-                    // If reminder is updated/set, reset cancelled status
-                    reminderCancelled: reminder ? false : todo.reminderCancelled
+                    reminderCancelled: reminder ? false : todo.reminderCancelled,
                 } : todo)
         },
         checkTodo: (
@@ -105,4 +102,4 @@ export const { addTodo, deleteTodo, editTodo, checkTodo, archiveTodo, archiveAll
 export const selectTodos = (state: { todo: TodoState }): TodoState['todos'] =>
     state.todo.todos
 
-export default todoSlice.reducer 
+export default todoSlice.reducer

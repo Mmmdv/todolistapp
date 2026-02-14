@@ -2,8 +2,7 @@ import { baseApi } from "@/store/api/baseApi"
 import AsyncStorage from "@react-native-async-storage/async-storage"
 import { combineReducers, configureStore } from "@reduxjs/toolkit"
 import { TypedUseSelectorHook, useDispatch, useSelector } from "react-redux"
-import { createTransform, FLUSH, PAUSE, PERSIST, PersistConfig, PURGE, REGISTER, REHYDRATE } from "redux-persist"
-import persistReducer from "redux-persist/es/persistReducer"
+import { createTransform, FLUSH, PAUSE, PERSIST, PersistConfig, persistReducer, persistStore, PURGE, REGISTER, REHYDRATE } from "redux-persist"
 import appReducer from "./slices/appSlice"
 import notificationReducer from "./slices/notificationSlice"
 import todoReducer from "./slices/todoSlice"
@@ -14,6 +13,13 @@ const reducers = combineReducers({
     notification: notificationReducer,
     [baseApi.reducerPath]: baseApi.reducer,
 })
+
+const rootReducer = (state: any, action: any) => {
+    if (action.type === 'RESET_APP') {
+        state = undefined;
+    }
+    return reducers(state, action);
+};
 
 export type RootState = ReturnType<typeof reducers>;
 
@@ -36,7 +42,7 @@ const persistConfig: PersistConfig<RootState> = {
     transforms: [rtkQueryTransform]
 }
 
-const persistedReducer = persistReducer(persistConfig, reducers)
+const persistedReducer = persistReducer(persistConfig, rootReducer)
 
 export const store = configureStore({
     reducer: persistedReducer,
@@ -48,6 +54,8 @@ export const store = configureStore({
         }).concat(baseApi.middleware),
     devTools: process.env.NODE_ENV !== "production",
 })
+
+export const persistor = persistStore(store);
 
 export type AppDispatch = typeof store.dispatch;
 

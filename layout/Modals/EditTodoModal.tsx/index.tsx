@@ -17,6 +17,9 @@ import { useEffect, useRef, useState } from "react";
 import { Animated, Platform, Pressable, TextInput, TouchableOpacity, View } from "react-native";
 import { localStyles } from "./styles";
 
+import { useAppSelector } from "@/store";
+import { selectNotificationById } from "@/store/slices/notificationSlice";
+
 type EditTodoModalProps = {
     isOpen: boolean
     onClose: () => void
@@ -34,6 +37,9 @@ const EditTodoModal: React.FC<EditTodoModalProps> = ({
     const { t, colors, notificationsEnabled, todoNotifications } = useTheme();
     const dispatch = useAppDispatch();
 
+    const notification = useAppSelector(state => notificationId ? selectNotificationById(state, notificationId) : undefined);
+    const reminderStatus = notification?.status;
+
     const [isFocused, setIsFocused] = useState(false)
     const [updatedTitle, setUpdateTitle] = useState(title)
     const [inputError, setInputError] = useState(false)
@@ -43,6 +49,7 @@ const EditTodoModal: React.FC<EditTodoModalProps> = ({
 
     const picker = useDateTimePicker({
         initialDate: reminder ? new Date(reminder) : undefined,
+        tabSettingEnabled: todoNotifications
     });
 
     useEffect(() => {
@@ -84,11 +91,11 @@ const EditTodoModal: React.FC<EditTodoModalProps> = ({
 
             dispatch(updateNotificationStatus({
                 id: notificationId,
-                status: 'changed'
+                status: 'Dəyişdirilib və ləğv olunub'
             }));
         }
 
-        if (picker.reminderDate && notificationsEnabled && todoNotifications) {
+        if (picker.reminderDate && notificationsEnabled && todoNotifications && (picker.reminderDate?.toISOString() !== reminder)) {
             const displayTitle = categoryTitle || t("tab_todo");
             const newId = await schedulePushNotification(displayTitle, updatedTitle, picker.reminderDate, categoryIcon);
             newNotificationId = newId;
@@ -99,7 +106,7 @@ const EditTodoModal: React.FC<EditTodoModalProps> = ({
                     title: displayTitle,
                     body: updatedTitle,
                     date: picker.reminderDate.toISOString(),
-                    status: 'pending',
+                    status: 'Gözlənilir',
                     categoryIcon,
                 }));
             }
@@ -181,8 +188,8 @@ const EditTodoModal: React.FC<EditTodoModalProps> = ({
                                 onPress={picker.startReminderFlow}
                                 activeOpacity={0.7}
                             >
-                                <Ionicons name={(notificationsEnabled && !reminderCancelled) ? "calendar" : "notifications-off"} size={18} color="#fff" />
-                                <StyledText style={[localStyles.chipText, (!notificationsEnabled || reminderCancelled) && { textDecorationLine: 'line-through', opacity: 0.7 }]}>
+                                <Ionicons name={(reminderStatus === 'Ləğv olunub' || reminderStatus === 'Dəyişdirilib və ləğv olunub' || reminderCancelled) ? "notifications-off" : "calendar"} size={18} color="#fff" />
+                                <StyledText style={[localStyles.chipText, (reminderStatus === 'Ləğv olunub' || reminderStatus === 'Dəyişdirilib və ləğv olunub' || reminderCancelled) && { textDecorationLine: 'line-through', opacity: 0.7 }]}>
                                     {picker.formatFullDate(picker.reminderDate)}
                                 </StyledText>
                             </TouchableOpacity>
@@ -262,14 +269,14 @@ const EditTodoModal: React.FC<EditTodoModalProps> = ({
 
                             <View style={[modalStyles.buttonsContainer, { marginTop: 20 }]}>
                                 <StyledButton
-                                    label={picker.showTimePicker ? t("back") : t("cancel")}
+                                    label={picker.showTimePicker ? t("back") : t("close")}
                                     onPress={picker.showTimePicker ? picker.goBackToDatePicker : picker.closePickers}
                                     variant="dark_button"
                                     style={{ flex: 1 }}
                                 />
                                 <StyledButton
-                                    label={picker.showDatePicker ? t("next") : t("save")}
-                                    onPress={picker.showDatePicker ? picker.confirmDateIOS : picker.confirmTimeIOS}
+                                    label={picker.showDatePicker ? (reminder ? t("back") : t("next")) : t("save")}
+                                    onPress={picker.showDatePicker ? (reminder ? picker.goBackToTimePicker : picker.confirmDateIOS) : picker.confirmTimeIOS}
                                     variant="dark_button"
                                     style={{ flex: 1 }}
                                 />
@@ -322,7 +329,10 @@ const EditTodoModal: React.FC<EditTodoModalProps> = ({
                             <StyledButton
                                 label={t("enable")}
                                 onPress={() => {
-                                    dispatch(updateAppSetting({ notificationsEnabled: true }));
+                                    dispatch(updateAppSetting({
+                                        notificationsEnabled: true,
+                                        todoNotifications: true
+                                    }));
                                     picker.setShowPermissionModal(false);
                                     setTimeout(() => {
                                         picker.proceedWithReminder();

@@ -2,10 +2,11 @@ import StyledText from "@/components/StyledText";
 import { useTheme } from "@/hooks/useTheme";
 import { Ionicons } from "@expo/vector-icons";
 import React from "react";
-import { Modal, TouchableOpacity, View } from "react-native";
+import { Modal, ScrollView, TouchableOpacity, View } from "react-native";
 import ApplicationSection from "./sections/ApplicationSection";
 import LanguageSection from "./sections/LanguageSection";
 import NotificationSection from "./sections/NotificationSection";
+import SecuritySection from "./sections/SecuritySection";
 import ThemeSection from "./sections/ThemeSection";
 import { styles } from "./styles";
 
@@ -29,7 +30,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ visible, onClose }) => {
                 activeOpacity={1}
                 onPress={() => { }}
             >
-                <View style={[styles.modalContent, { backgroundColor: colors.SECONDARY_BACKGROUND, borderColor: colors.PRIMARY_BORDER_DARK }]}>
+                <View style={[styles.modalContent, { backgroundColor: colors.SECONDARY_BACKGROUND, borderColor: colors.PRIMARY_BORDER_DARK, maxHeight: '80%' }]}>
                     <View style={styles.header}>
                         <StyledText style={[styles.title, { color: colors.PRIMARY_TEXT }]}>
                             {t("settings")}
@@ -39,10 +40,13 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ visible, onClose }) => {
                         </TouchableOpacity>
                     </View>
 
-                    <LanguageSection />
-                    <ThemeSection />
-                    <NotificationSection visible={visible} />
-                    <ApplicationSection />
+                    <ScrollView showsVerticalScrollIndicator={false}>
+                        <LanguageSection />
+                        <ThemeSection />
+                        <NotificationSection visible={visible} />
+                        <SecuritySection />
+                        <ApplicationSection />
+                    </ScrollView>
                 </View>
             </TouchableOpacity>
         </Modal>

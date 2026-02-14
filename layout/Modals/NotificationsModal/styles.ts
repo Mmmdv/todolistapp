@@ -28,10 +28,6 @@ export const styles = StyleSheet.create({
         alignItems: 'center',
         zIndex: 1,
     },
-    headerTitle: {
-        fontSize: 20,
-        fontWeight: "bold",
-    },
     rightPlaceholder: {
         minWidth: 40,
         alignItems: 'flex-end',
@@ -60,26 +56,17 @@ export const styles = StyleSheet.create({
     contentContainer: {
         flex: 1,
     },
-    itemHeader: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-        alignItems: "flex-start",
-        marginBottom: 4,
-    },
     itemTitle: {
         fontSize: 16,
-        fontWeight: "600",
-        flex: 1,
-        marginRight: 8,
+        fontWeight: "400",
+        lineHeight: 20,
+        marginBottom: 2,
     },
     itemDate: {
         fontSize: 12,
-        color: "#888",
+        color: "#c2c1c1ff",
     },
-    itemBody: {
-        fontSize: 15,
-        lineHeight: 22,
-    },
+
     emptyContainer: {
         flex: 1,
         justifyContent: "center",

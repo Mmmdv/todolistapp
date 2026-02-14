@@ -45,23 +45,20 @@ const NotificationsModal: React.FC<NotificationsModalProps> = ({ visible, onClos
     }, [dispatch]);
 
     const renderItem = useCallback(({ item }: { item: any }) => {
-        const isPending = new Date(item.date) > new Date();
-        let statusColor = colors.CHECKBOX_SUCCESS;
-        let statusIcon: any = "notifications";
-        let statusBg = "rgba(78, 205, 196, 0.15)";
+        let statusColor = "#FFB74D";
+        let statusIcon: any = "hourglass-outline";
+        let statusLabel = item.status || 'Gözlənilir';
 
-        if (item.status === 'cancelled') {
+        if (item.status === 'Ləğv olunub' || item.status === 'Dəyişdirilib və ləğv olunub') {
             statusColor = colors.ERROR_INPUT_TEXT;
             statusIcon = "notifications-off";
-            statusBg = "rgba(255, 69, 58, 0.1)";
-        } else if (item.status === 'changed') {
-            statusColor = "#5BC0EB";
-            statusIcon = "create-outline";
-            statusBg = "rgba(91, 192, 235, 0.15)";
-        } else if (isPending) {
+        } else if (item.status === 'Göndərilib') {
+            statusColor = colors.CHECKBOX_SUCCESS;
+            statusIcon = "checkmark-done-circle-outline";
+        } else {
+            // Default is Gözlənilir
             statusColor = "#FFB74D";
-            statusIcon = "time-outline";
-            statusBg = "rgba(255, 183, 77, 0.15)";
+            statusIcon = "hourglass-outline";
         }
 
         const isUnread = !item.read;
@@ -87,51 +84,24 @@ const NotificationsModal: React.FC<NotificationsModalProps> = ({ visible, onClos
                     <Ionicons name={(item.categoryIcon as any) || "notifications-outline"} size={26} color={statusColor} />
                 </View>
                 <View style={styles.contentContainer}>
-                    <View style={styles.itemHeader}>
-                        <StyledText style={[
-                            styles.itemTitle,
-                            {
-                                color: colors.PRIMARY_TEXT,
-                                fontWeight: isUnread ? "700" : "600",
-                                fontSize: 16
-                            }
-                        ]}>{item.title}</StyledText>
-                    </View>
                     <StyledText style={[
-                        styles.itemBody,
+                        styles.itemTitle,
                         {
                             color: colors.PRIMARY_TEXT,
-                            opacity: 0.8,
-                            marginBottom: 4
+                            fontWeight: isUnread ? "700" : "600",
                         }
-                    ]}>{item.body}</StyledText>
+                    ]}
+                        numberOfLines={2}
+                        ellipsizeMode="tail"
+                    >{item.body}</StyledText>
                     <StyledText style={styles.itemDate}>
                         {new Date(item.date).toLocaleDateString()} {new Date(item.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </StyledText>
-                    {item.status === 'cancelled' && (
-                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 4 }}>
-                            <Ionicons name="close-circle-outline" size={14} color={colors.ERROR_INPUT_TEXT} />
-                            <StyledText style={{ fontSize: 12, color: colors.ERROR_INPUT_TEXT, fontWeight: "600" }}>{t("canceled")}</StyledText>
-                        </View>
-                    )}
-                    {item.status === 'changed' && (
-                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 4 }}>
-                            <Ionicons name="create-outline" size={14} color="#5BC0EB" />
-                            <StyledText style={{ fontSize: 12, color: "#5BC0EB", fontWeight: "600" }}>{t("changed_status")}</StyledText>
-                        </View>
-                    )}
-                    {item.status !== 'cancelled' && item.status !== 'changed' && isPending && (
-                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 4 }}>
-                            <Ionicons name="hourglass-outline" size={14} color="#FFB74D" />
-                            <StyledText style={{ fontSize: 12, color: "#FFB74D", fontWeight: "600" }}>{t("pending")}</StyledText>
-                        </View>
-                    )}
-                    {item.status !== 'cancelled' && item.status !== 'changed' && !isPending && (
-                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 4 }}>
-                            <Ionicons name="checkmark-done-circle-outline" size={14} color={colors.CHECKBOX_SUCCESS} />
-                            <StyledText style={{ fontSize: 12, color: colors.CHECKBOX_SUCCESS, fontWeight: "600" }}>{t("sent")}</StyledText>
-                        </View>
-                    )}
+
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 4 }}>
+                        <Ionicons name={statusIcon} size={14} color={statusColor} />
+                        <StyledText style={{ fontSize: 12, color: statusColor, fontWeight: "600" }}>{statusLabel}</StyledText>
+                    </View>
                 </View>
                 {isUnread && (
                     <View style={{ justifyContent: 'center' }}>
@@ -164,7 +134,6 @@ const NotificationsModal: React.FC<NotificationsModalProps> = ({ visible, onClos
                     </TouchableOpacity>
 
                     <View style={[styles.titleContainer, { paddingTop: insets.top + 16, paddingBottom: 16 }]} pointerEvents="none">
-                        <StyledText style={[styles.headerTitle, { color: colors.PRIMARY_TEXT }]}>{t("notifications")}</StyledText>
                     </View>
 
                     <View style={styles.rightPlaceholder}>

@@ -14,7 +14,8 @@ export const useTheme = () => {
         shoppingNotifications,
         eventsNotifications,
         expensesNotifications,
-        username
+        username,
+        biometricEnabled
     } = useAppSelector(selectAppSettings);
 
     const colors = theme === Theme.DARK ? DarkTheme : LightTheme;
@@ -37,6 +38,7 @@ export const useTheme = () => {
         shoppingNotifications,
         eventsNotifications,
         expensesNotifications,
-        username
+        username,
+        biometricEnabled
     };
 };

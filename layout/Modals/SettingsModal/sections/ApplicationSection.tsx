@@ -1,17 +1,23 @@
 import StyledText from "@/components/StyledText";
 import { useTheme } from "@/hooks/useTheme";
 import ResetAppModal from "@/layout/Modals/ResetAppModal";
+import ResetSuccessModal from "@/layout/Modals/ResetSuccessModal";
+import { persistor } from "@/store";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Constants from "expo-constants";
+import * as Notifications from "expo-notifications";
 import * as Updates from "expo-updates";
 import React from "react";
-import { Alert, Image, Linking, Platform, TouchableOpacity, View } from "react-native";
+import { DevSettings, Image, Linking, Platform, TouchableOpacity, View } from "react-native";
+import { useDispatch } from "react-redux";
 import { styles } from "../styles";
 
 const ApplicationSection: React.FC = () => {
     const { colors, t } = useTheme();
+    const dispatch = useDispatch();
     const [isResetModalOpen, setIsResetModalOpen] = React.useState(false);
+    const [isSuccessModalOpen, setIsSuccessModalOpen] = React.useState(false);
 
     const appVersion = Constants.expoConfig?.version ?? '1.0.0';
 
@@ -28,29 +34,44 @@ const ApplicationSection: React.FC = () => {
 
     const onConfirmReset = async () => {
         try {
-            const keys = await AsyncStorage.getAllKeys();
-            if (keys.length > 0) {
-                await AsyncStorage.clear();
-            }
+            // 1. Cancel all notifications in the OS
+            await Notifications.cancelAllScheduledNotificationsAsync();
 
-            try {
-                if (Updates && Updates.reloadAsync) {
-                    await Updates.reloadAsync();
-                } else {
-                    throw new Error("Updates module not available");
-                }
-            } catch (reloadError) {
-                Alert.alert(
-                    t("success") || "Uğurlu",
-                    "Tətbiq sıfırlandı. Zəhmət olmasa tətbiqi yenidən başladın."
-                );
-            }
+            // 2. Clear all AsyncStorage data (including Redux persist data)
+            await AsyncStorage.clear();
+
+            // 3. Clear Redux state and its persistence
+            await persistor.purge();
+
+            // 4. Dispatch global reset action to clear in-memory state
+            dispatch({ type: 'RESET_APP' });
+
+            setIsResetModalOpen(false);
+            setIsSuccessModalOpen(true);
         } catch (error) {
             console.error("Failed to reset storage:", error);
-            Alert.alert(t("error") || "Xəta", "Məlumatları silmək mümkün olmadı.");
-        } finally {
             setIsResetModalOpen(false);
         }
+    };
+
+    const handleCloseSuccess = () => {
+        setIsSuccessModalOpen(false);
+        // Add a small delay to ensure the modal is closing/closed before reload
+        setTimeout(async () => {
+            try {
+                if (Updates && typeof Updates.reloadAsync === 'function') {
+                    await Updates.reloadAsync();
+                } else if (__DEV__) {
+                    DevSettings.reload();
+                }
+            } catch (reloadError) {
+                console.error("Failed to reload app:", reloadError);
+                // Fallback for development
+                if (__DEV__) {
+                    DevSettings.reload();
+                }
+            }
+        }, 500);
     };
 
     return (
@@ -98,8 +119,14 @@ const ApplicationSection: React.FC = () => {
                 onClose={() => setIsResetModalOpen(false)}
                 onReset={onConfirmReset}
             />
+
+            <ResetSuccessModal
+                isOpen={isSuccessModalOpen}
+                onClose={handleCloseSuccess}
+            />
         </>
     );
 };
+
 
 export default ApplicationSection;

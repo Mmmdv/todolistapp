@@ -6,6 +6,7 @@ import { Platform } from "react-native";
 type UseDateTimePickerOptions = {
     initialDate?: Date;
     onDateConfirmedAndroid?: (date: Date) => void;
+    tabSettingEnabled?: boolean;
 };
 
 export function useDateTimePicker(options: UseDateTimePickerOptions = {}) {
@@ -23,7 +24,7 @@ export function useDateTimePicker(options: UseDateTimePickerOptions = {}) {
 
     const startReminderFlow = () => {
         Haptics.selectionAsync();
-        if (!notificationsEnabled) {
+        if (!notificationsEnabled || options.tabSettingEnabled === false) {
             setShowPermissionModal(true);
             return;
         }
@@ -34,7 +35,11 @@ export function useDateTimePicker(options: UseDateTimePickerOptions = {}) {
         if (Platform.OS === 'ios') {
             setTempDate(reminderDate || new Date());
         }
-        setShowDatePicker(true);
+        if (reminderDate) {
+            setShowTimePicker(true);
+        } else {
+            setShowDatePicker(true);
+        }
     };
 
     const onChangeDate = (event: any, selectedDate?: Date) => {
@@ -87,7 +92,7 @@ export function useDateTimePicker(options: UseDateTimePickerOptions = {}) {
 
         if (checkDate < today) {
             setPickerToReopen('date');
-            setShowDatePicker(false); // Close current picker first
+            setShowDatePicker(false);
             setTimeout(() => {
                 setShowPastDateAlert(true);
             }, 350);
@@ -96,6 +101,13 @@ export function useDateTimePicker(options: UseDateTimePickerOptions = {}) {
 
         setTempDate(newDate);
         setShowDatePicker(false);
+        // If we came from time picker (reminderDate was set) and just changing date, 
+        // we might want to go back to time or just finish.
+        // User asked: "yox yenisi təyin olunursa tarix barabanından" (if new, start from date) -> then it continues to time.
+        // If changing existing, starts from time.
+
+        // Logical flow: If it's a new one, we MUST go to time.
+        // If it's an existing one and user manually went back to date, we probably want to go back to time to confirm.
         setTimeout(() => {
             setShowTimePicker(true);
         }, 350);
@@ -183,6 +195,13 @@ export function useDateTimePicker(options: UseDateTimePickerOptions = {}) {
         }, 350);
     };
 
+    const goBackToTimePicker = () => {
+        setShowDatePicker(false);
+        setTimeout(() => {
+            setShowTimePicker(true);
+        }, 350);
+    };
+
     const closePastDateAlert = () => {
         setShowPastDateAlert(false);
         if (pickerToReopen) {
@@ -230,6 +249,7 @@ export function useDateTimePicker(options: UseDateTimePickerOptions = {}) {
         onChangeTime,
         confirmTimeIOS,
         goBackToDatePicker,
+        goBackToTimePicker,
         closePickers,
         resetState,
 

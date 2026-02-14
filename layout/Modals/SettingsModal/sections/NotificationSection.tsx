@@ -90,15 +90,47 @@ const NotificationSection: React.FC<NotificationSectionProps> = ({ visible }) =>
     };
 
     const confirmDisableNotifications = async () => {
-        dispatch(updateAppSetting({ notificationsEnabled: false }));
-        await Notifications.cancelAllScheduledNotificationsAsync();
-        dispatch(cancelAllNotifications());
-        dispatch(cancelAllReminders());
-        setIsConfirmDisableOpen(false);
+        try {
+            // Update global setting
+            dispatch(updateAppSetting({ notificationsEnabled: false }));
+
+            // Cancel ALL scheduled notifications in the OS
+            await Notifications.cancelAllScheduledNotificationsAsync();
+
+            // Synchronize state and history
+            dispatch(cancelAllNotifications());
+            dispatch(cancelAllReminders());
+
+            setIsConfirmDisableOpen(false);
+        } catch (error) {
+            console.error("Error disabling notifications:", error);
+            // Even if OS cancellation fails, we should still update state
+            setIsConfirmDisableOpen(false);
+        }
     };
 
-    const toggleNotificationCategory = (key: keyof UpdateAppSettingsPayload, value: boolean) => {
+    const toggleNotificationCategory = async (key: keyof UpdateAppSettingsPayload, value: boolean) => {
         dispatch(updateAppSetting({ [key]: value }));
+
+        if (!value) {
+            // If toggling off, handle cancellations and status updates
+            if (key === 'todoNotifications') {
+                try {
+                    // Cancel specifically using todo notification IDs for reliability
+                    for (const todo of todos) {
+                        if (todo.notificationId && !todo.isCompleted && !todo.isArchived) {
+                            await Notifications.cancelScheduledNotificationAsync(todo.notificationId);
+                        }
+                    }
+                } catch (error) {
+                    console.error("Error cancelling todo notifications:", error);
+                }
+
+                dispatch(cancelAllReminders());
+                dispatch(cancelAllNotifications(t("tab_todo")));
+            }
+            // Add other categories here if needed
+        }
     };
 
     const subSwitches = [

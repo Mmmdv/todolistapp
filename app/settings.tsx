@@ -4,6 +4,7 @@ import { useTheme } from "@/hooks/useTheme";
 import ApplicationSection from "@/layout/Modals/SettingsModal/sections/ApplicationSection";
 import LanguageSection from "@/layout/Modals/SettingsModal/sections/LanguageSection";
 import NotificationSection from "@/layout/Modals/SettingsModal/sections/NotificationSection";
+import SecuritySection from "@/layout/Modals/SettingsModal/sections/SecuritySection";
 import ThemeSection from "@/layout/Modals/SettingsModal/sections/ThemeSection";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
@@ -19,7 +20,6 @@ export default function SettingsScreen() {
     return (
         <GestureWrapper>
             <View style={[styles.mainContainer, { backgroundColor: colors.PRIMARY_BACKGROUND }]}>
-                {/* Header matched with Notifications style */}
                 <View style={[
                     styles.header,
                     {
@@ -46,11 +46,17 @@ export default function SettingsScreen() {
                     showsVerticalScrollIndicator={false}
                 >
                     <LanguageSection />
-                    <View style={[styles.divider, { backgroundColor: colors.PRIMARY_BORDER_DARK }]} />
+                    <View style={[styles.divider, { backgroundColor: colors.PRIMARY_BORDER }]} />
+
                     <ThemeSection />
-                    <View style={[styles.divider, { backgroundColor: colors.PRIMARY_BORDER_DARK }]} />
+                    <View style={[styles.divider, { backgroundColor: colors.PRIMARY_BORDER }]} />
+
                     <NotificationSection visible={true} />
-                    <View style={[styles.divider, { backgroundColor: colors.PRIMARY_BORDER_DARK }]} />
+                    <View style={[styles.divider, { backgroundColor: colors.PRIMARY_BORDER }]} />
+
+                    <SecuritySection />
+                    <View style={[styles.divider, { backgroundColor: colors.PRIMARY_BORDER }]} />
+
                     <ApplicationSection />
                 </ScrollView>
             </View>
@@ -99,9 +105,9 @@ const styles = StyleSheet.create({
         padding: 20,
     },
     divider: {
-        height: 1,
+        height: 0.4,
         width: '100%',
         marginVertical: 20,
-        opacity: 0.3,
+        opacity: 0.4,
     },
 });

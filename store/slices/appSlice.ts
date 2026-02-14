@@ -22,6 +22,7 @@ export interface AppState {
     eventsNotifications: boolean
     expensesNotifications: boolean
     username?: string
+    biometricEnabled: boolean
     usageStats: Record<string, number>
 }
 
@@ -36,6 +37,7 @@ const initialState: AppState = {
     eventsNotifications: true,
     expensesNotifications: true,
     username: "",
+    biometricEnabled: false,
     usageStats: {
         todo: 0,
         movies: 0,
@@ -57,6 +59,7 @@ export interface UpdateAppSettingsPayload {
     eventsNotifications?: boolean
     expensesNotifications?: boolean
     username?: string
+    biometricEnabled?: boolean
 }
 
 export const appSlice = createSlice({
@@ -67,7 +70,7 @@ export const appSlice = createSlice({
             state: AppState,
             action: PayloadAction<UpdateAppSettingsPayload>
         ) => {
-            const { lang, theme, notificationsEnabled, username } = action.payload;
+            const { lang, theme, notificationsEnabled, username, biometricEnabled } = action.payload;
             if (lang) state.lang = lang
             if (theme) state.theme = theme
             if (notificationsEnabled !== undefined) state.notificationsEnabled = notificationsEnabled
@@ -78,6 +81,7 @@ export const appSlice = createSlice({
             if (action.payload.eventsNotifications !== undefined) state.eventsNotifications = action.payload.eventsNotifications
             if (action.payload.expensesNotifications !== undefined) state.expensesNotifications = action.payload.expensesNotifications
             if (username !== undefined) state.username = username
+            if (biometricEnabled !== undefined) state.biometricEnabled = biometricEnabled
         },
         incrementUsage: (state, action: PayloadAction<string>) => {
             if (!state.usageStats) {

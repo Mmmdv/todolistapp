@@ -64,7 +64,8 @@ const AddTodoModal: React.FC<AddTodoModalProps> = ({
     const picker = useDateTimePicker({
         onDateConfirmedAndroid: (date) => {
             setTimeout(() => onPressAdd(date), 100);
-        }
+        },
+        tabSettingEnabled: todoNotifications
     });
 
     useEffect(() => {
@@ -244,14 +245,14 @@ const AddTodoModal: React.FC<AddTodoModalProps> = ({
 
                                 <View style={[modalStyles.buttonsContainer, { marginTop: 20 }]}>
                                     <StyledButton
-                                        label={picker.showTimePicker ? t("back") : t("cancel")}
+                                        label={picker.showTimePicker ? t("back") : t("close")}
                                         onPress={picker.showTimePicker ? picker.goBackToDatePicker : picker.closePickers}
                                         variant="dark_button"
                                         style={{ flex: 1 }}
                                     />
                                     <StyledButton
-                                        label={picker.showDatePicker ? t("next") : t("save")}
-                                        onPress={picker.showDatePicker ? picker.confirmDateIOS : picker.confirmTimeIOS}
+                                        label={picker.showDatePicker ? (picker.reminderDate ? t("back") : t("next")) : t("save")}
+                                        onPress={picker.showDatePicker ? (picker.reminderDate ? picker.goBackToTimePicker : picker.confirmDateIOS) : picker.confirmTimeIOS}
                                         variant="dark_button"
                                         style={{ flex: 1 }}
                                     />
@@ -304,7 +305,10 @@ const AddTodoModal: React.FC<AddTodoModalProps> = ({
                                 <StyledButton
                                     label={t("enable")}
                                     onPress={() => {
-                                        dispatch(updateAppSetting({ notificationsEnabled: true }));
+                                        dispatch(updateAppSetting({
+                                            notificationsEnabled: true,
+                                            todoNotifications: true
+                                        }));
                                         picker.setShowPermissionModal(false);
                                         setTimeout(() => {
                                             picker.proceedWithReminder();

@@ -1,7 +1,9 @@
 import { AppStatusBar } from "@/components/AppStatusBar";
+import BiometricGuard from "@/components/BiometricGuard";
 import { registerForLocalNotificationsAsync } from '@/constants/notifications';
 import Header from "@/layout/Header";
-import store from "@/store";
+import store, { persistor } from "@/store";
+import { markAsRead, updateNotificationStatus } from "@/store/slices/notificationSlice";
 // import analytics from "@react-native-firebase/analytics";
 // import crashlytics from "@react-native-firebase/crashlytics";
 import * as Haptics from "expo-haptics";
@@ -12,7 +14,6 @@ import { LogBox } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { Provider } from "react-redux";
-import persistStore from "redux-persist/es/persistStore";
 import { PersistGate } from "redux-persist/integration/react";
 
 LogBox.ignoreLogs([
@@ -34,8 +35,6 @@ console.warn = (...args) => {
   originalWarn(...args);
 };
 
-const persistor = persistStore(store);
-
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldPlaySound: true,
@@ -53,17 +52,21 @@ export default function RootLayout() {
     Haptics.selectionAsync();
     registerForLocalNotificationsAsync();
 
-    // Firebase Initialization
-    // try {
-    //   if (analytics().logAppOpen) {
-    //     analytics().logAppOpen().catch(e => console.log('Analytics error:', e));
-    //   }
-    //   if (crashlytics().log) {
-    //     crashlytics().log('App Started');
-    //   }
-    // } catch (e) {
-    //   console.log('Firebase not available in this environment');
-    // }
+    const notificationReceivedSubscription = Notifications.addNotificationReceivedListener(notification => {
+      const id = notification.request.identifier;
+      store.dispatch(updateNotificationStatus({ id, status: 'Göndərilib' }));
+    });
+
+    const responseReceivedSubscription = Notifications.addNotificationResponseReceivedListener(response => {
+      const id = response.notification.request.identifier;
+      store.dispatch(updateNotificationStatus({ id, status: 'Göndərilib' }));
+      store.dispatch(markAsRead(id));
+    });
+
+    return () => {
+      notificationReceivedSubscription.remove();
+      responseReceivedSubscription.remove();
+    };
   }, []);
 
   return (
@@ -72,9 +75,11 @@ export default function RootLayout() {
         <Provider store={store}>
           <PersistGate loading={null} persistor={persistor}>
             <AppStatusBar />
-            <Stack screenOptions={{ headerShown: false }}>
-              <Stack.Screen name="(tabs)" options={{ header: () => <Header />, headerShown: true }} />
-            </Stack>
+            <BiometricGuard>
+              <Stack screenOptions={{ headerShown: false }}>
+                <Stack.Screen name="(tabs)" options={{ header: () => <Header />, headerShown: true }} />
+              </Stack>
+            </BiometricGuard>
           </PersistGate>
         </Provider>
       </SafeAreaProvider>

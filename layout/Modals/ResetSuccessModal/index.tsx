@@ -6,16 +6,14 @@ import { useTheme } from "@/hooks/useTheme";
 import { Ionicons } from "@expo/vector-icons";
 import { View } from "react-native";
 
-type ResetAppModalProps = {
+type ResetSuccessModalProps = {
     isOpen: boolean;
     onClose: () => void;
-    onReset: () => void;
 };
 
-const ResetAppModal: React.FC<ResetAppModalProps> = ({
+const ResetSuccessModal: React.FC<ResetSuccessModalProps> = ({
     isOpen,
     onClose,
-    onReset,
 }) => {
     const { colors, t } = useTheme();
 
@@ -24,33 +22,29 @@ const ResetAppModal: React.FC<ResetAppModalProps> = ({
             <View style={modalStyles.modalContainer}>
                 <View style={[modalStyles.iconContainer, {
                     backgroundColor: colors.SECONDARY_BACKGROUND,
-                    shadowColor: "#FF6B6B",
+                    shadowColor: colors.CHECKBOX_SUCCESS,
                     shadowOffset: { width: 0, height: 4 },
                     shadowOpacity: 0.3,
                     shadowRadius: 8,
                     elevation: 5
                 }]}>
-                    <Ionicons name="trash-bin" size={28} color="#FF6B6B" />
+                    <Ionicons name="checkmark-circle" size={28} color={colors.CHECKBOX_SUCCESS} />
                 </View>
 
-                <StyledText style={modalStyles.headerText}>{t("reset_factory_confirm_title")}</StyledText>
+                <StyledText style={modalStyles.headerText}>{t("success")}</StyledText>
 
                 <View style={modalStyles.divider} />
 
                 <StyledText style={modalStyles.messageText}>
-                    {t("reset_factory_confirm_message")}
+                    {t("reset_success_message")}
                 </StyledText>
 
                 <View style={modalStyles.buttonsContainer}>
                     <StyledButton
-                        label={t("cancel")}
+                        label={t("close")}
                         onPress={onClose}
                         variant="dark_button"
-                    />
-                    <StyledButton
-                        label={t("reset_factory")}
-                        onPress={onReset}
-                        variant="dark_button"
+                        style={{ width: '100%' }}
                     />
                 </View>
             </View>
@@ -58,4 +52,4 @@ const ResetAppModal: React.FC<ResetAppModalProps> = ({
     );
 };
 
-export default ResetAppModal;
+export default ResetSuccessModal;

@@ -1,13 +1,16 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
+export type NotificationStatus = 'Gözlənilir' | 'Dəyişdirilib və ləğv olunub' | 'Göndərilib' | 'Ləğv olunub';
+
 export interface Notification {
     id: string;
     title: string;
     body: string;
     date: string;
     read: boolean;
-    status?: 'pending' | 'sent' | 'cancelled' | 'updated' | 'changed';
+    status?: NotificationStatus;
     categoryIcon?: string;
+    todoId?: string; // Adding todoId to link back
 }
 
 export interface NotificationState {
@@ -28,7 +31,7 @@ export const notificationSlice = createSlice({
             state.notifications.unshift({
                 ...action.payload,
                 read: false,
-                status: action.payload.status || 'pending',
+                status: action.payload.status || 'Gözlənilir',
             });
             state.unreadCount += 1;
         },
@@ -56,18 +59,22 @@ export const notificationSlice = createSlice({
                 state.notifications.splice(index, 1);
             }
         },
-        updateNotificationStatus: (state, action: PayloadAction<{ id: string, status: Notification['status'] }>) => {
+        updateNotificationStatus: (state, action: PayloadAction<{ id: string, status: NotificationStatus }>) => {
             const notification = state.notifications.find(n => n.id === action.payload.id);
-            if (notification) {
+            if (notification && notification.status !== 'Göndərilib') {
                 notification.status = action.payload.status;
             }
         },
-        cancelAllNotifications: (state) => {
+        cancelAllNotifications: (state, action: PayloadAction<string | undefined>) => {
             const now = new Date();
+            const categoryTitle = action.payload;
             state.notifications.forEach(n => {
                 const nDate = new Date(n.date);
-                if (n.status === 'pending' || nDate > now) {
-                    n.status = 'cancelled';
+                // Use includes to match even if there are emojis in the title
+                if (!categoryTitle || n.title.includes(categoryTitle)) {
+                    if (n.status === 'Gözlənilir' || nDate > now) {
+                        n.status = 'Ləğv olunub';
+                    }
                 }
             });
         }
@@ -77,6 +84,8 @@ export const notificationSlice = createSlice({
 export const { addNotification, markAllAsRead, clearNotifications, deleteNotification, markAsRead, cancelAllNotifications, updateNotificationStatus } = notificationSlice.actions;
 
 export const selectNotifications = (state: { notification: NotificationState }) => state.notification.notifications;
+export const selectNotificationById = (state: { notification: NotificationState }, id: string) =>
+    state.notification.notifications.find(n => n.id === id);
 export const selectUnreadCount = (state: { notification: NotificationState }) => state.notification.unreadCount;
 
 export default notificationSlice.reducer;
