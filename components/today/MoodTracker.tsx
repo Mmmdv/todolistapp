@@ -100,7 +100,7 @@ export default function MoodTracker() {
                         style={styles.resetButton}
                     >
                         <StyledText style={{ color: colors.PLACEHOLDER, fontSize: 10, textDecorationLine: 'underline' }}>
-                            Test: Sıfırla
+                            {t('test_reset')}
                         </StyledText>
                     </TouchableOpacity>
                 </View>

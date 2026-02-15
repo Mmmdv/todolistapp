@@ -20,17 +20,20 @@ export default function RatingTracker() {
 
     return (
         <View style={[homeStyles.card, { backgroundColor: colors.SECONDARY_BACKGROUND, padding: 16, height: 160 }]}>
-            <View style={homeStyles.cardHeader}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, zIndex: 2 }}>
                 <View style={[homeStyles.iconContainer, { backgroundColor: '#F59E0B' }]}>
                     <Ionicons name="star" size={20} color="#FFF" />
                 </View>
-            </View>
-
-            <View style={{ marginTop: 8 }}>
-                <StyledText style={[homeStyles.cardTitle, { color: colors.PRIMARY_TEXT }]} numberOfLines={1}>
+                <StyledText
+                    style={[homeStyles.cardTitle, { color: colors.PRIMARY_TEXT, fontSize: 16, flex: 1, marginBottom: 0 }]}
+                    adjustsFontSizeToFit={true}
+                    minimumFontScale={0.8}
+                >
                     {t('today_rating')}
                 </StyledText>
+            </View>
 
+            <View style={{ flex: 1, justifyContent: 'center' }}>
                 <ScrollView
                     horizontal
                     showsHorizontalScrollIndicator={false}
@@ -51,7 +54,8 @@ export default function RatingTracker() {
                         >
                             <StyledText style={{
                                 color: currentRating === num ? '#FFF' : colors.PRIMARY_TEXT,
-                                fontWeight: 'bold'
+                                fontWeight: 'bold',
+                                fontSize: 16
                             }}>
                                 {num}
                             </StyledText>
@@ -68,14 +72,14 @@ export default function RatingTracker() {
 const styles = StyleSheet.create({
     ratingRow: {
         flexDirection: 'row',
-        gap: 8,
-        marginTop: 12,
+        gap: 10,
+        marginTop: 15,
         paddingBottom: 4,
     },
     ratingButton: {
-        width: 36,
-        height: 36,
-        borderRadius: 18,
+        width: 44,
+        height: 44,
+        borderRadius: 22,
         borderWidth: 1,
         justifyContent: 'center',
         alignItems: 'center',

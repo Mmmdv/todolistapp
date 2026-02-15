@@ -1,5 +1,6 @@
 import StyledText from "@/components/StyledText";
 import CurrencyRates from "@/components/today/CurrencyRates";
+import ImportantTasksToday from "@/components/today/ImportantTasksToday";
 import MoodTracker from "@/components/today/MoodTracker";
 import RatingTracker from "@/components/today/RatingTracker";
 import Weather from "@/components/today/Weather";
@@ -20,7 +21,7 @@ export default function Today() {
         <View style={[styles.container, { backgroundColor: colors.PRIMARY_BACKGROUND }]}>
             <View style={styles.header}>
                 <View style={{ flex: 1, justifyContent: 'center' }}>
-                    <StyledText style={[styles.greeting, { color: colors.PRIMARY_TEXT, fontSize: 24, fontWeight: 'bold' }]}>
+                    <StyledText style={[styles.greeting, { color: colors.PRIMARY_TEXT, fontSize: 22, fontWeight: 'bold' }]}>
                         {t("tab_today")}
                     </StyledText>
                     {city && (
@@ -38,15 +39,10 @@ export default function Today() {
                 contentContainerStyle={styles.scrollContent}
                 showsVerticalScrollIndicator={false}
             >
+                <ImportantTasksToday />
                 <MoodTracker />
-                <View style={styles.row}>
-                    <View style={{ flex: 1 }}>
-                        <WeightTracker />
-                    </View>
-                    <View style={{ flex: 1 }}>
-                        <RatingTracker />
-                    </View>
-                </View>
+                <WeightTracker />
+                <RatingTracker />
                 <CurrencyRates />
                 <Weather />
             </ScrollView>

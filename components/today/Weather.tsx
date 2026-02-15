@@ -100,7 +100,7 @@ export default function Weather() {
                     </View>
                 </View>
             ) : (
-                <StyledText style={{ color: colors.PLACEHOLDER }}>Weather info unavailable</StyledText>
+                <StyledText style={{ color: colors.PLACEHOLDER }}>{t('weather_unavailable')}</StyledText>
             )}
         </View>
     );

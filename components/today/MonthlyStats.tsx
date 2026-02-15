@@ -45,15 +45,15 @@ export default function MonthlyStats() {
 
             <View style={styles.statsRow}>
                 <View style={[styles.statItem, { backgroundColor: colors.PRIMARY_BACKGROUND }]}>
-                    <StyledText style={{ color: colors.PLACEHOLDER, fontSize: 10, textAlign: 'center' }}>Mood Avg</StyledText>
+                    <StyledText style={{ color: colors.PLACEHOLDER, fontSize: 10, textAlign: 'center' }}>{t('avg_mood')}</StyledText>
                     <StyledText style={{ color: colors.PRIMARY_TEXT, fontSize: 18, fontWeight: 'bold' }}>{avgMood}</StyledText>
                 </View>
                 <View style={[styles.statItem, { backgroundColor: colors.PRIMARY_BACKGROUND }]}>
-                    <StyledText style={{ color: colors.PLACEHOLDER, fontSize: 10, textAlign: 'center' }}>Rating Avg</StyledText>
+                    <StyledText style={{ color: colors.PLACEHOLDER, fontSize: 10, textAlign: 'center' }}>{t('avg_rating')}</StyledText>
                     <StyledText style={{ color: colors.PRIMARY_TEXT, fontSize: 18, fontWeight: 'bold' }}>{avgRating}/10</StyledText>
                 </View>
                 <View style={[styles.statItem, { backgroundColor: colors.PRIMARY_BACKGROUND }]}>
-                    <StyledText style={{ color: colors.PLACEHOLDER, fontSize: 10, textAlign: 'center' }}>Days tracked</StyledText>
+                    <StyledText style={{ color: colors.PLACEHOLDER, fontSize: 10, textAlign: 'center' }}>{t('days_tracked')}</StyledText>
                     <StyledText style={{ color: colors.PRIMARY_TEXT, fontSize: 18, fontWeight: 'bold' }}>{monthData.length}</StyledText>
                 </View>
             </View>

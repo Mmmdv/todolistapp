@@ -25,7 +25,7 @@ export const styles = StyleSheet.create({
     },
     scrollContent: {
         paddingHorizontal: PADDING,
-        paddingBottom: 20,
+        paddingBottom: 100,
         gap: GAP,
     },
     row: {
