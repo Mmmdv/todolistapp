@@ -134,6 +134,9 @@ const NotificationsModal: React.FC<NotificationsModalProps> = ({ visible, onClos
                     </TouchableOpacity>
 
                     <View style={[styles.titleContainer, { paddingTop: insets.top + 16, paddingBottom: 16 }]} pointerEvents="none">
+                        <StyledText style={{ fontSize: 18, fontFamily: 'Poppins_600SemiBold', color: colors.PRIMARY_TEXT }}>
+                            {t("notifications")}
+                        </StyledText>
                     </View>
 
                     <View style={styles.rightPlaceholder}>

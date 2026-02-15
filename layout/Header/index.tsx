@@ -7,10 +7,13 @@ import React, { useState } from "react";
 import { Image, Share, StyleSheet, TouchableOpacity, View } from "react-native";
 
 import NotificationsModal from "@/layout/Modals/NotificationsModal";
+import { useAppSelector } from "@/store";
+import { selectUnreadCount } from "@/store/slices/notificationSlice";
 
 const Header: React.FC = () => {
   const { colors, t, isDark } = useTheme();
   const router = useRouter();
+  const unreadCount = useAppSelector(selectUnreadCount);
   const [notificationsVisible, setNotificationsVisible] = useState(false);
 
   let [fontsLoaded] = useFonts({
@@ -44,7 +47,34 @@ const Header: React.FC = () => {
           <Ionicons name="share-outline" size={22} color={colors.PRIMARY_TEXT} />
         </TouchableOpacity>
         <TouchableOpacity onPress={() => setNotificationsVisible(true)} activeOpacity={0.7} style={styles.iconButton}>
-          <Ionicons name="notifications-outline" size={22} color={colors.PRIMARY_TEXT} />
+          <View>
+            <Ionicons name="notifications-outline" size={22} color={colors.PRIMARY_TEXT} />
+            {unreadCount > 0 && (
+              <View style={{
+                position: 'absolute',
+                top: -4,
+                right: -4,
+                backgroundColor: colors.ERROR_INPUT_TEXT,
+                borderRadius: 10,
+                minWidth: 16,
+                height: 16,
+                justifyContent: 'center',
+                alignItems: 'center',
+                paddingHorizontal: 2,
+                borderWidth: 1.5,
+                borderColor: colors.SECONDARY_BACKGROUND
+              }}>
+                <StyledText style={{
+                  color: 'white',
+                  fontSize: 10,
+                  fontWeight: '700',
+                  lineHeight: 12
+                }}>
+                  {unreadCount > 99 ? '99+' : unreadCount}
+                </StyledText>
+              </View>
+            )}
+          </View>
         </TouchableOpacity>
         <TouchableOpacity onPress={() => router.push("/settings")} activeOpacity={0.7} style={styles.iconButton}>
           <Ionicons name="settings-outline" size={22} color={colors.PRIMARY_TEXT} />

@@ -156,7 +156,7 @@ const TodayTasksModal: React.FC<TodayTasksModalProps> = ({
 
                     <View style={localStyles.titleContainer}>
                         <StyledText style={[localStyles.headerTitle, { color: colors.PRIMARY_TEXT }]}>
-                            Bugünə nə var?
+                            {t('today_tasks_header')}
                         </StyledText>
                     </View>
 

@@ -47,7 +47,7 @@ export default function ImportantTasksToday() {
     const getPriorityColor = (task: Todo, index: number) => {
         // Detection for overdue in the main card
         const isOverdue = task.reminder ? new Date(task.reminder) < new Date() : false;
-        if (isOverdue) return '#f75d76ff'; // Use the same premium rose red
+        if (isOverdue) return '#eb637aff'; // Use the same premium rose red
 
         const palette = [
             '#14B8A6', // Teal
@@ -62,12 +62,12 @@ export default function ImportantTasksToday() {
         <View style={[homeStyles.card, { backgroundColor: colors.SECONDARY_BACKGROUND, padding: 16, minHeight: 140 }]}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 16, zIndex: 10 }}>
                 <View style={[styles.iconContainer, { backgroundColor: '#3B82F6' }]}>
-                    <Ionicons name="notifications-outline" size={20} color="#FFF" />
+                    <Ionicons name="notifications" size={17} color="#FFF" />
                 </View>
                 <StyledText
-                    style={[homeStyles.cardTitle, { color: colors.PRIMARY_TEXT, fontSize: 16, flex: 1, marginBottom: 0 }]}
+                    style={[homeStyles.cardTitle, { color: colors.PRIMARY_TEXT, fontSize: 14, flex: 1, marginBottom: 0 }]}
                 >
-                    Bugünə nə var?
+                    {t('today_tasks_header')}
                 </StyledText>
                 {todayTasks.length > 0 && (
                     <View style={[styles.badge, { backgroundColor: '#3B82F6' }]}>
@@ -79,12 +79,12 @@ export default function ImportantTasksToday() {
             {todayTasks.length === 0 ? (
                 <View style={styles.emptyContainer}>
                     <View style={[styles.emptyIconContainer, { backgroundColor: colors.PRIMARY_BORDER }]}>
-                        <Ionicons name="checkmark-done-circle-outline" size={40} color={colors.PLACEHOLDER} />
+                        <Ionicons name="checkmark-done-circle" size={40} color="#fefeffff" />
                     </View>
-                    <StyledText style={[styles.emptyText, { color: colors.PLACEHOLDER }]}>
+                    <StyledText style={[styles.emptyText, { color: colors.PRIMARY_BORDER }]}>
                         {t('today_no_tasks')}
                     </StyledText>
-                    <StyledText style={[styles.emptySubtext, { color: colors.PLACEHOLDER }]}>
+                    <StyledText style={[styles.emptySubtext, { color: colors.PRIMARY_BORDER }]}>
                         {t('today_have_nice_day')}
                     </StyledText>
                 </View>
@@ -96,25 +96,22 @@ export default function ImportantTasksToday() {
                             style={({ pressed }) => [
                                 styles.taskItem,
                                 {
-                                    backgroundColor: colors.PRIMARY_BACKGROUND,
-                                    borderLeftColor: getPriorityColor(task, index),
+                                    backgroundColor: '#0c1018ff',
                                     opacity: pressed ? 0.7 : 1,
                                     transform: [{ scale: pressed ? 0.98 : 1 }]
                                 }
                             ]}
                             onPress={handleTaskPress}
                         >
-                            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                                <View style={[styles.priorityDot, { backgroundColor: getPriorityColor(task, index) }]} />
                                 <View style={[styles.taskContent, { flex: 1 }]}>
-                                    <View style={styles.taskHeader}>
-                                        <View style={[styles.priorityDot, { backgroundColor: getPriorityColor(task, index) }]} />
-                                        <StyledText
-                                            style={[styles.taskTitle, { color: colors.PRIMARY_TEXT }]}
-                                            numberOfLines={1}
-                                        >
-                                            {task.title}
-                                        </StyledText>
-                                    </View>
+                                    <StyledText
+                                        style={[styles.taskTitle, { color: colors.PRIMARY_TEXT }]}
+                                        numberOfLines={1}
+                                    >
+                                        {task.title}
+                                    </StyledText>
                                     <View style={styles.taskFooter}>
                                         <View style={styles.timeContainer}>
                                             <Ionicons name="time-outline" size={11} color={colors.PLACEHOLDER} />
@@ -178,12 +175,12 @@ const styles = StyleSheet.create({
         flex: 1,
         alignItems: 'center',
         justifyContent: 'center',
-        paddingVertical: 20,
+        marginBottom: 8,
     },
     emptyIconContainer: {
-        width: 70,
-        height: 70,
-        borderRadius: 35,
+        width: 60,
+        height: 60,
+        borderRadius: 30,
         alignItems: 'center',
         justifyContent: 'center',
         marginBottom: 12,
@@ -199,13 +196,12 @@ const styles = StyleSheet.create({
         opacity: 0.7,
     },
     tasksContainer: {
-        gap: 4,
+        gap: 6,
     },
     taskItem: {
         borderRadius: 10,
         paddingVertical: 8, // Increased from 6
         paddingHorizontal: 12,
-        borderLeftWidth: 3,
         shadowColor: "#000",
         shadowOffset: { width: 0, height: 1 },
         shadowOpacity: 0.05,
@@ -234,7 +230,6 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        paddingLeft: 14,
     },
     timeContainer: {
         flexDirection: 'row',
@@ -249,7 +244,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
-        height: 32, // Reduced height
+        height: 36, // Reduced height
         paddingHorizontal: 16,
         borderRadius: 10,
         gap: 6,
@@ -262,13 +257,13 @@ const styles = StyleSheet.create({
     },
     viewAllText: {
         color: '#FFF',
-        fontSize: 12, // Reduced font size
+        fontSize: 14, // Reduced font size
         fontWeight: '600',
     },
     iconContainer: {
-        width: 30,
-        height: 30,
-        borderRadius: 12,
+        width: 26,
+        height: 26,
+        borderRadius: 8,
         justifyContent: 'center',
         alignItems: 'center',
     },

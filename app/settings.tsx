@@ -1,11 +1,11 @@
 import GestureWrapper from "@/components/GestureWrapper";
+import ApplicationSection from "@/components/settings/sections/ApplicationSection";
+import LanguageSection from "@/components/settings/sections/LanguageSection";
+import NotificationSection from "@/components/settings/sections/NotificationSection";
+import SecuritySection from "@/components/settings/sections/SecuritySection";
+import ThemeSection from "@/components/settings/sections/ThemeSection";
 import StyledText from "@/components/StyledText";
 import { useTheme } from "@/hooks/useTheme";
-import ApplicationSection from "@/layout/Modals/SettingsModal/sections/ApplicationSection";
-import LanguageSection from "@/layout/Modals/SettingsModal/sections/LanguageSection";
-import NotificationSection from "@/layout/Modals/SettingsModal/sections/NotificationSection";
-import SecuritySection from "@/layout/Modals/SettingsModal/sections/SecuritySection";
-import ThemeSection from "@/layout/Modals/SettingsModal/sections/ThemeSection";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React from "react";

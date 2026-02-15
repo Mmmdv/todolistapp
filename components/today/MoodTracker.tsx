@@ -2,17 +2,18 @@ import { styles as homeStyles } from '@/constants/homeStyles';
 import { useTheme } from '@/hooks/useTheme';
 import { resetMood, selectDayData, setMood } from '@/store/slices/todaySlice';
 import { Ionicons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
 import React, { useEffect, useRef } from 'react';
 import { Animated, Pressable, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import StyledText from '../StyledText';
 
 const MOODS = [
-    { id: 1, icon: 'sad-outline', label: 'mood_very_bad', color: '#A5B4FC' },
-    { id: 2, icon: 'heart-dislike-outline', label: 'mood_bad', color: '#818CF8' },
-    { id: 3, icon: 'happy-outline', label: 'mood_good', color: '#6366F1' },
-    { id: 4, icon: 'heart-outline', label: 'mood_very_good', color: '#4F46E5' },
-    { id: 5, icon: 'star-outline', label: 'mood_excellent', color: '#4338CA' },
+    { id: 1, icon: 'battery-dead', label: 'mood_very_bad', color: '#475569', haptic: Haptics.NotificationFeedbackType.Error },
+    { id: 2, icon: 'flash-off', label: 'mood_bad', color: '#64748B', haptic: Haptics.ImpactFeedbackStyle.Medium },
+    { id: 3, icon: 'leaf', label: 'mood_good', color: '#10B981', haptic: Haptics.ImpactFeedbackStyle.Light },
+    { id: 4, icon: 'flash', label: 'mood_very_good', color: '#F59E0B', haptic: Haptics.NotificationFeedbackType.Success },
+    { id: 5, icon: 'flame', label: 'mood_excellent', color: '#EF4444', haptic: Haptics.NotificationFeedbackType.Success },
 ];
 
 export default function MoodTracker() {
@@ -29,6 +30,8 @@ export default function MoodTracker() {
     const questionKey = `mood_q${(dateSeed % questionCount) + 1}` as any;
 
     const fadeAnim = useRef(new Animated.Value(0.4)).current;
+    const scaleAnim = useRef(new Animated.Value(1)).current;
+    const shakeAnim = useRef(new Animated.Value(0)).current;
 
     useEffect(() => {
         if (selectedMoodId) {
@@ -49,14 +52,50 @@ export default function MoodTracker() {
         }
     }, [selectedMoodId]);
 
+    const triggerHaptics = async (moodId: number) => {
+        const mood = MOODS.find(m => m.id === moodId);
+        if (!mood) return;
+
+        try {
+            if (mood.id === 1) {
+                await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+            } else if (mood.id === 5 || mood.id === 4) {
+                await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+            } else {
+                await Haptics.impactAsync(mood.haptic as any);
+            }
+        } catch (e) { }
+    };
+
     const handleSelect = (moodId: number) => {
         if (!selectedMoodId) {
             dispatch(setMood({ date: today, mood: moodId }));
+            triggerHaptics(moodId);
+
+            scaleAnim.setValue(0.8);
+            if (moodId <= 2) {
+                Animated.sequence([
+                    Animated.timing(shakeAnim, { toValue: 10, duration: 50, useNativeDriver: true }),
+                    Animated.timing(shakeAnim, { toValue: -10, duration: 50, useNativeDriver: true }),
+                    Animated.timing(shakeAnim, { toValue: 10, duration: 50, useNativeDriver: true }),
+                    Animated.timing(shakeAnim, { toValue: 0, duration: 50, useNativeDriver: true }),
+                ]).start();
+            }
+
+            Animated.spring(scaleAnim, {
+                toValue: 1,
+                friction: 4,
+                tension: 40,
+                useNativeDriver: true
+            }).start();
         }
     };
 
     const handleReset = () => {
         dispatch(resetMood({ date: today }));
+        fadeAnim.setValue(0.4);
+        scaleAnim.setValue(1);
+        shakeAnim.setValue(0);
     };
 
     const getFeedback = () => {
@@ -66,20 +105,35 @@ export default function MoodTracker() {
         return t('mood_feedback_positive');
     };
 
-    return (
-        <View style={[homeStyles.card, { backgroundColor: colors.SECONDARY_BACKGROUND, padding: 16 }]}>
-            {!selectedMoodId && (
-                <StyledText style={[homeStyles.cardTitle, { color: colors.PRIMARY_TEXT, marginBottom: 12 }]}>
-                    {t(questionKey)}
-                </StyledText>
-            )}
+    const currentThemeColor = selectedMoodDisplay?.color || '#6366F1';
 
-            {selectedMoodId ? (
-                <View style={styles.votedContainer}>
-                    <StyledText style={[styles.votedText, { color: colors.PRIMARY_TEXT, textAlign: 'center' }]}>
+    return (
+        <View style={[homeStyles.card, { backgroundColor: colors.SECONDARY_BACKGROUND, padding: 16, minHeight: 140 }]}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 8, zIndex: 10 }}>
+                <View style={[styles.iconContainer, { backgroundColor: currentThemeColor }]}>
+                    <Ionicons name={selectedMoodDisplay ? (selectedMoodDisplay.icon as any) : "pulse"} size={17} color="#FFF" />
+                </View>
+                {!selectedMoodId ? (
+                    <StyledText style={[homeStyles.cardTitle, { color: colors.PRIMARY_TEXT, fontSize: 14, flex: 1, marginBottom: 0 }]}>
+                        {t(questionKey)}
+                    </StyledText>
+                ) : (
+                    <StyledText style={[homeStyles.cardTitle, { color: colors.PRIMARY_TEXT, fontSize: 14, flex: 1, marginBottom: 0 }]}>
                         {getFeedback()}
                     </StyledText>
+                )}
+            </View>
 
+            {selectedMoodId ? (
+                <Animated.View style={[
+                    styles.votedContainer,
+                    {
+                        transform: [
+                            { scale: scaleAnim },
+                            { translateX: shakeAnim }
+                        ]
+                    }
+                ]}>
                     <Animated.View style={[styles.waitingContainer, { opacity: fadeAnim }]}>
                         <View style={styles.loadingRow}>
                             <Ionicons name="people-outline" size={16} color={colors.PLACEHOLDER} style={{ marginRight: 6 }} />
@@ -103,7 +157,7 @@ export default function MoodTracker() {
                             {t('test_reset')}
                         </StyledText>
                     </TouchableOpacity>
-                </View>
+                </Animated.View>
             ) : (
                 <View style={styles.moodsRow}>
                     {MOODS.map((mood) => (
@@ -112,7 +166,10 @@ export default function MoodTracker() {
                             onPress={() => handleSelect(mood.id)}
                             style={({ pressed }) => [
                                 styles.moodButton,
-                                { opacity: pressed ? 0.7 : 1 }
+                                {
+                                    opacity: pressed ? 0.7 : 1,
+                                    transform: [{ scale: pressed ? 0.9 : 1 }]
+                                }
                             ]}
                         >
                             <Ionicons name={mood.icon as any} size={32} color={mood.color} />
@@ -123,6 +180,10 @@ export default function MoodTracker() {
                     ))}
                 </View>
             )}
+            <View
+                style={[homeStyles.decorativeCircle, { backgroundColor: `${currentThemeColor}20` }]}
+                pointerEvents="none"
+            />
         </View>
     );
 }
@@ -144,20 +205,15 @@ const styles = StyleSheet.create({
     },
     votedContainer: {
         alignItems: 'center',
-        paddingVertical: 10,
-    },
-    votedText: {
-        marginTop: 8,
-        fontSize: 16,
-        fontWeight: '600',
+        justifyContent: 'center',
     },
     waitingContainer: {
-        marginTop: 20,
+        marginTop: 5,
         alignItems: 'center',
         width: '100%',
-        paddingTop: 15,
+        paddingTop: 10,
         borderTopWidth: 1,
-        borderTopColor: 'rgba(150, 150, 150, 0.1)',
+        borderTopColor: 'rgba(212, 209, 209, 0.1)',
     },
     loadingRow: {
         flexDirection: 'row',
@@ -176,7 +232,14 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     resetButton: {
-        marginTop: 15,
+        marginTop: 5,
         padding: 5,
-    }
+    },
+    iconContainer: {
+        width: 26,
+        height: 26,
+        borderRadius: 8,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
 });

@@ -1,9 +1,10 @@
 import { styles as homeStyles } from '@/constants/homeStyles';
 import { useTheme } from '@/hooks/useTheme';
-import { resetWeight, selectDayData, selectLastWeight, setWeight } from '@/store/slices/todaySlice';
+import { resetWeight, selectDayData, selectLastWeight, selectPreviousWeight, setWeight } from '@/store/slices/todaySlice';
 import { Ionicons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
 import React, { useEffect, useRef, useState } from 'react';
-import { FlatList, NativeScrollEvent, NativeSyntheticEvent, Pressable, StyleSheet, View } from 'react-native';
+import { Animated, FlatList, NativeScrollEvent, NativeSyntheticEvent, Pressable, StyleSheet, View } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import StyledText from '../StyledText';
 
@@ -23,17 +24,43 @@ export default function WeightTracker() {
     const today = new Date().toISOString().split('T')[0];
     const dayData: any = useSelector(selectDayData(today));
     const lastWeight = useSelector(selectLastWeight);
+    const previousWeight = useSelector(selectPreviousWeight(today));
     const flatListRef = useRef<FlatList>(null);
+    const scaleAnim = useRef(new Animated.Value(1)).current;
+    const fadeAnim = useRef(new Animated.Value(dayData?.weight ? 1 : 0)).current;
 
     const initialWeight = lastWeight || 70;
     const [localWeight, setLocalWeight] = useState<number>(dayData?.weight || initialWeight);
     const [containerWidth, setContainerWidth] = useState(0);
 
-    const dayOfMonth = new Date().getDate();
-    const questionIndex = (dayOfMonth % 5) + 1;
-    const weightQuestionKey = `weight_q${questionIndex}` as const;
-
     const currentWeight = dayData?.weight;
+
+    const getWeightComparison = () => {
+        if (!currentWeight || !previousWeight) return null;
+        const diff = parseFloat((currentWeight - previousWeight).toFixed(1));
+
+        if (diff < 0) return {
+            color: '#10B981', // Green
+            icon: 'trending-down' as any,
+            label: Math.abs(diff) >= 1 ? 'mood_excellent' : 'mood_feedback_positive',
+            haptic: Haptics.NotificationFeedbackType.Success,
+            diff: diff.toFixed(1)
+        };
+        if (diff === 0) return {
+            color: '#3B82F6', // Blue
+            icon: 'remove' as any,
+            label: 'mood_q1',
+            haptic: Haptics.ImpactFeedbackStyle.Medium,
+            diff: '0'
+        };
+        return {
+            color: '#FF4757', // Red
+            icon: 'trending-up' as any,
+            label: diff >= 1 ? 'mood_bad' : 'mood_feedback_negative',
+            haptic: Haptics.NotificationFeedbackType.Error,
+            diff: `+${diff.toFixed(1)}`
+        };
+    };
 
     const scrollToWeight = (weight: number, animated = false) => {
         if (flatListRef.current && containerWidth > 0) {
@@ -53,6 +80,21 @@ export default function WeightTracker() {
         }
     }, [containerWidth, currentWeight]);
 
+    const startSelectedAnimation = () => {
+        fadeAnim.setValue(0);
+        scaleAnim.setValue(0.8);
+        Animated.parallel([
+            Animated.spring(scaleAnim, { toValue: 1, friction: 5, useNativeDriver: true }),
+            Animated.timing(fadeAnim, { toValue: 1, duration: 500, useNativeDriver: true })
+        ]).start();
+    };
+
+    useEffect(() => {
+        if (currentWeight) {
+            startSelectedAnimation();
+        }
+    }, [!!currentWeight]);
+
     const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
         const x = event.nativeEvent.contentOffset.x;
         const index = Math.round(x / ITEM_WIDTH);
@@ -60,32 +102,57 @@ export default function WeightTracker() {
             const val = WEIGHT_DATA[index].value;
             if (val !== localWeight) {
                 setLocalWeight(val);
+                Haptics.selectionAsync();
             }
         }
     };
 
-    const handleConfirm = () => {
+    const handleConfirm = async () => {
         dispatch(setWeight({ date: today, weight: localWeight }));
+
+        // Triger haptics based on comparison
+        const diff = previousWeight ? localWeight - previousWeight : 0;
+        if (diff < 0) await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        else if (diff > 0) await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+        else await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+
+        startSelectedAnimation();
     };
 
     const handleReset = () => {
+        // Test rejimi: Cari seçimi dünənə yaz və bugünü təmizlə
+        const yesterdayDate = new Date();
+        yesterdayDate.setDate(yesterdayDate.getDate() - 1);
+        const yesterdayStr = yesterdayDate.toISOString().split('T')[0];
+
+        // Mevcut deyeri dünən kimi yadda saxla
+        dispatch(setWeight({ date: yesterdayStr, weight: localWeight }));
+
+        // Bu günü təmizlə
         dispatch(resetWeight({ date: today }));
-        const defaultWeight = lastWeight || 70;
-        setLocalWeight(defaultWeight);
+
+        fadeAnim.setValue(0);
+
+        // Xətkeşi sinxronizasiya et
+        setTimeout(() => {
+            scrollToWeight(localWeight, true);
+        }, 100);
     };
 
+    const comp = getWeightComparison();
+
     return (
-        <View style={[homeStyles.card, { backgroundColor: colors.SECONDARY_BACKGROUND, padding: 16, height: 180 }]}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, zIndex: 10 }}>
-                <View style={[homeStyles.iconContainer, { backgroundColor: '#10B981' }]}>
-                    <Ionicons name="barbell-outline" size={20} color="#FFF" />
+        <View style={[homeStyles.card, { backgroundColor: colors.SECONDARY_BACKGROUND, padding: 16, minHeight: 160 }]}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, zIndex: 10 }}>
+                <View style={[styles.iconContainer, { backgroundColor: comp?.color || '#10B981' }]}>
+                    <Ionicons name="barbell" size={17} color="#FFF" />
                 </View>
                 <StyledText
-                    style={[homeStyles.cardTitle, { color: colors.PRIMARY_TEXT, fontSize: 16, flex: 1, marginBottom: 0 }]}
+                    style={[homeStyles.cardTitle, { color: colors.PRIMARY_TEXT, fontSize: 14, flex: 1, marginBottom: 0 }]}
                     adjustsFontSizeToFit={true}
                     minimumFontScale={0.8}
                 >
-                    {currentWeight ? t('today_weight') : t(weightQuestionKey as any)}
+                    {t('today_weight')}
                 </StyledText>
                 {currentWeight && (
                     <Pressable onPress={handleReset} style={styles.headerButton}>
@@ -97,7 +164,6 @@ export default function WeightTracker() {
             <View style={{ flex: 1, justifyContent: 'center' }}>
                 {!currentWeight ? (
                     <View style={styles.contentContainer}>
-                        {/* Enlarged Ruler Section */}
                         <View
                             style={styles.rulerContainer}
                             onLayout={(e) => setContainerWidth(e.nativeEvent.layout.width)}
@@ -144,7 +210,6 @@ export default function WeightTracker() {
                             />
                         </View>
 
-                        {/* Confirm Button with Live Weight inside */}
                         <Pressable
                             style={({ pressed }) => [
                                 styles.confirmButton,
@@ -163,16 +228,30 @@ export default function WeightTracker() {
                         </Pressable>
                     </View>
                 ) : (
-                    <View style={styles.selectedContainer}>
-                        <StyledText style={[styles.selectedValue, { color: colors.PRIMARY_TEXT }]}>
-                            {currentWeight}
-                        </StyledText>
-                        <StyledText style={[styles.unit, { color: colors.PLACEHOLDER }]}>kg</StyledText>
-                    </View>
+                    <Animated.View style={[styles.selectedContainer, { transform: [{ scale: scaleAnim }], opacity: fadeAnim }]}>
+                        <View style={styles.weightValueRow}>
+                            <StyledText style={[styles.selectedValue, { color: comp?.color || colors.PRIMARY_TEXT }]}>
+                                {currentWeight}
+                            </StyledText>
+                            <StyledText style={[styles.unit, { color: colors.PLACEHOLDER }]}>kg</StyledText>
+                        </View>
+
+                        {comp && (
+                            <View style={[styles.feedbackBadge, { backgroundColor: `${comp.color}15` }]}>
+                                <Ionicons name={comp.icon} size={14} color={comp.color} />
+                                <StyledText style={[styles.diffText, { color: comp.color }]}>
+                                    {comp.diff} kg
+                                </StyledText>
+                            </View>
+                        )}
+                    </Animated.View>
                 )}
             </View>
 
-            <View style={[homeStyles.decorativeCircle, { backgroundColor: 'rgba(16, 185, 129, 0.1)' }]} />
+            <View
+                style={[homeStyles.decorativeCircle, { backgroundColor: comp?.color ? `${comp.color}20` : 'rgba(16, 185, 129, 0.1)' }]}
+                pointerEvents="none"
+            />
         </View>
     );
 }
@@ -215,7 +294,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
-        height: 32,
+        height: 36,
         paddingHorizontal: 16,
         borderRadius: 10,
         shadowColor: "#000",
@@ -227,7 +306,7 @@ const styles = StyleSheet.create({
     },
     buttonText: {
         color: '#FFF',
-        fontSize: 16,
+        fontSize: 14,
         fontWeight: 'bold',
     },
     buttonUnit: {
@@ -235,20 +314,44 @@ const styles = StyleSheet.create({
         color: 'rgba(255, 255, 255, 0.8)',
     },
     selectedContainer: {
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    weightValueRow: {
         flexDirection: 'row',
         alignItems: 'baseline',
-        justifyContent: 'center',
     },
     selectedValue: {
         fontSize: 48,
-        fontWeight: 'bold',
+        fontWeight: '900',
     },
     unit: {
-        fontSize: 24,
+        fontSize: 20,
         marginLeft: 6,
         fontWeight: '600',
+        opacity: 0.7,
+    },
+    feedbackBadge: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 6,
+        paddingHorizontal: 12,
+        paddingVertical: 4,
+        borderRadius: 20,
+        marginTop: -5,
+    },
+    diffText: {
+        fontSize: 14,
+        fontWeight: '700',
     },
     headerButton: {
         padding: 6,
-    }
+    },
+    iconContainer: {
+        width: 26,
+        height: 26,
+        borderRadius: 8,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
 });

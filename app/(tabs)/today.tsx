@@ -1,21 +1,21 @@
 import StyledText from "@/components/StyledText";
-import CurrencyRates from "@/components/today/CurrencyRates";
 import ImportantTasksToday from "@/components/today/ImportantTasksToday";
 import MoodTracker from "@/components/today/MoodTracker";
 import RatingTracker from "@/components/today/RatingTracker";
-import Weather from "@/components/today/Weather";
 import WeightTracker from "@/components/today/WeightTracker";
 
 import { styles } from "@/constants/homeStyles";
 import { useLocation } from "@/hooks/useLocation";
 import { useTheme } from "@/hooks/useTheme";
 import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import React from "react";
 import { ScrollView, View } from "react-native";
 
 export default function Today() {
     const { colors, t } = useTheme();
     const { city } = useLocation();
+    const router = useRouter();
 
     return (
         <View style={[styles.container, { backgroundColor: colors.PRIMARY_BACKGROUND }]}>
@@ -43,8 +43,6 @@ export default function Today() {
                 <MoodTracker />
                 <WeightTracker />
                 <RatingTracker />
-                <CurrencyRates />
-                <Weather />
             </ScrollView>
         </View>
     );

@@ -61,6 +61,9 @@ const TodoItem: React.FC<TodoItemProps> = ({ id, title, isCompleted, isArchived,
     }
 
     const handleCheckToken = () => {
+        // Light haptic feedback for both checking and unchecking
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+
         if (!isCompleted) {
             setCelebrationType('star')
             playCelebration(ideaAnimations, setShowCelebrate)
