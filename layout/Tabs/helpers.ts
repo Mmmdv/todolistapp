@@ -9,6 +9,8 @@ export const getIconName = (routeName: string, isFocused: boolean): keyof typeof
         case "events": return isFocused ? "ticket" : "ticket-outline";
         case "movies": return isFocused ? "film" : "film-outline";
         case "expenses": return isFocused ? "wallet" : "wallet-outline";
+        case "today": return isFocused ? "today" : "today-outline";
+        case "stats": return isFocused ? "stats-chart" : "stats-chart-outline";
         default: return "ellipse-outline";
     }
 };
@@ -22,6 +24,8 @@ export const getLabelName = (routeName: string, t: (key: any) => string): string
         case "events": return t("tab_events");
         case "movies": return t("tab_movies");
         case "expenses": return t("tab_expenses");
+        case "today": return t("tab_today");
+        case "stats": return t("tab_stats");
         default: return "";
     }
 };

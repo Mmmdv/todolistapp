@@ -5,6 +5,7 @@ import React from "react";
 import { Modal, ScrollView, TouchableOpacity, View } from "react-native";
 import ApplicationSection from "./sections/ApplicationSection";
 import LanguageSection from "./sections/LanguageSection";
+import LocationSection from "./sections/LocationSection";
 import NotificationSection from "./sections/NotificationSection";
 import SecuritySection from "./sections/SecuritySection";
 import ThemeSection from "./sections/ThemeSection";
@@ -43,6 +44,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ visible, onClose }) => {
                     <ScrollView showsVerticalScrollIndicator={false}>
                         <LanguageSection />
                         <ThemeSection />
+                        <LocationSection />
                         <NotificationSection visible={visible} />
                         <SecuritySection />
                         <ApplicationSection />

@@ -5,12 +5,14 @@ import { TypedUseSelectorHook, useDispatch, useSelector } from "react-redux"
 import { createTransform, FLUSH, PAUSE, PERSIST, PersistConfig, persistReducer, persistStore, PURGE, REGISTER, REHYDRATE } from "redux-persist"
 import appReducer from "./slices/appSlice"
 import notificationReducer from "./slices/notificationSlice"
+import todayReducer from "./slices/todaySlice"
 import todoReducer from "./slices/todoSlice"
 
 const reducers = combineReducers({
     app: appReducer,
     todo: todoReducer,
     notification: notificationReducer,
+    today: todayReducer,
     [baseApi.reducerPath]: baseApi.reducer,
 })
 

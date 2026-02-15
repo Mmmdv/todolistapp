@@ -16,6 +16,18 @@ export default function TabsLayout() {
                 }}
             />
             <Tabs.Screen
+                name="today"
+                options={{
+                    title: "Today",
+                }}
+            />
+            <Tabs.Screen
+                name="stats"
+                options={{
+                    title: "Stats",
+                }}
+            />
+            <Tabs.Screen
                 name="birthday"
                 options={{ title: "Birthday" }}
             />
